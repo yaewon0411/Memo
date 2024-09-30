@@ -6,6 +6,16 @@ import lombok.NoArgsConstructor;
 
 public class RespDto {
 
+    @Getter
+    @NoArgsConstructor
+    public static class LoginRespDto{
+        public LoginRespDto(User user) {
+            this.id = user.getId();
+        }
+
+        private Long id;
+    }
+
     @NoArgsConstructor
     @Getter
     public static class JoinRespDto{

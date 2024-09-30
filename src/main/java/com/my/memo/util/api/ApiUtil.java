@@ -13,7 +13,7 @@ public class ApiUtil<T> {
         return new ApiResult<>(false, null, new ApiError(msg, status));
     }
     public static <T>ApiResult<T> error(int status, String msg, T errorMap){
-        return new ApiResult<>(false, null, new ApiError(msg, status, errorMap));
+        return new ApiResult<>(false, errorMap, new ApiError(msg, status));
     }
 
 }

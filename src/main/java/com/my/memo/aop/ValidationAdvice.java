@@ -22,16 +22,19 @@ public class ValidationAdvice {
     public void patchMapping(){};
 
     @Around("postMapping() || patchMapping()")
+    //@Around(" patchMapping()")
     public Object validationAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object[] args = proceedingJoinPoint.getArgs();
         for (Object arg : args) {
-            BindingResult bindingResult = (BindingResult) arg;
-            if(bindingResult.hasErrors()){
-                Map<String, String> errorMap = new HashMap<>();
-                for (FieldError fieldError : bindingResult.getFieldErrors()) {
-                    errorMap.put(fieldError.getField(), fieldError.getDefaultMessage());
+            if (arg instanceof BindingResult bindingResult) {
+                if(bindingResult.hasErrors()){
+                    Map<String, String> errorMap = new HashMap<>();
+                    for (FieldError fieldError : bindingResult.getFieldErrors()) {
+                        System.out.println("fieldError = " + fieldError.getField());
+                        errorMap.put(fieldError.getField(), fieldError.getDefaultMessage());
+                    }
+                    throw new CustomValidationException("유효성 검사 실패", errorMap);
                 }
-                throw new CustomValidationException("유효성 검사 실패", errorMap);
             }
         }
         return proceedingJoinPoint.proceed();
