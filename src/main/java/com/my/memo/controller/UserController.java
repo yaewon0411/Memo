@@ -16,44 +16,44 @@ import static com.my.memo.dto.user.ReqDto.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UserController {
 
     private final UserService userService;
 
     //로그아웃
-    @PostMapping("/s/logout")
+    @PostMapping("/s/users/logout")
     public ResponseEntity<?>logout(HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(userService.logout(session)), HttpStatus.OK);
     }
 
     //유저 삭제
-    @DeleteMapping("/s")
+    @DeleteMapping("/s/users")
     public ResponseEntity<?> deleteUser(HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(userService.deleteUser(session)), HttpStatus.OK);
     }
 
     //유저 정보 조회
-    @GetMapping("/s")
+    @GetMapping("/s/users")
     public ResponseEntity<?> getUserInfo(HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(userService.getUserInfo(session)), HttpStatus.OK);
     }
 
     //정보 수정
-    @PatchMapping("/s")
+    @PatchMapping("/s/users")
     public ResponseEntity<?> modifyUserInfo(@RequestBody @Valid UserModifyReqDto userModifyReqDto, BindingResult bindingResult,
                                             HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(userService.modifyUserInfo(userModifyReqDto, session)), HttpStatus.OK);
     }
 
     //회원가입
-    @PostMapping("/join")
+    @PostMapping("/users/join")
     public ResponseEntity<?> join(@ModelAttribute @Valid JoinReqDto joinReqDto, BindingResult bindingResult){
         return new ResponseEntity<>(ApiUtil.success(userService.join(joinReqDto)), HttpStatus.CREATED);
     }
 
     // 로그인
-    @PostMapping("/login")
+    @PostMapping("/users/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginReqDto loginReqDto, BindingResult bindingResult,
                                    HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(userService.login(loginReqDto,session )), HttpStatus.OK);

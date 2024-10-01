@@ -61,7 +61,7 @@ public class ScheduleRepository {
     }
 
     public Long save(Connection connection, Schedule schedule) throws SQLException {
-        String sql = "insert into schedule (content, start_at, end_at, user_id, is_public, created_at, last_modified_at) values (?, ?, ?, ?, ?,  now(), now())";
+        String sql = "insert into schedule (content, start_at, end_at, user_id, is_public, created_at, last_modified_at) values (?, ?, ?, ?, ?, ?, ?)";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
@@ -70,6 +70,8 @@ public class ScheduleRepository {
             pstmt.setTimestamp(3, Timestamp.valueOf(schedule.getEndAt()));
             pstmt.setLong(4, schedule.getUser().getId());
             pstmt.setBoolean(5, schedule.isPublic());
+            pstmt.setTimestamp(6, Timestamp.valueOf(schedule.getCreatedAt()));
+            pstmt.setTimestamp(7, Timestamp.valueOf(schedule.getLastModifiedAt()));
 
             int createdRow = pstmt.executeUpdate();
 

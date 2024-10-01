@@ -18,7 +18,7 @@ public class ReqDto {
     public static class UserModifyReqDto{
 
         @Size(min = 2, max = 10, message = "이름은 2자 이상 10자 이하로 입력해야 합니다 ")
-        @Pattern(regexp = "^[a-zA-Z가-힣]+$", message = "이름은 영문 또는 한글만 입력 가능합니다")
+        @Pattern(regexp = "^(?!\\s*$)[a-zA-Z가-힣\\s]+$", message = "이름은 영문 또는 한글만 입력 가능합니다")
         private String name;
 
         @Email(message = "이메일 형식이 올바르지 않습니다")

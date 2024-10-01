@@ -12,10 +12,10 @@ public class RespDto {
     public static class UserLogoutRespDto{
         public UserLogoutRespDto(Boolean logout, Long id) {
             this.logout = logout;
-            this.id = id;
+            this.userId = id;
         }
         private Boolean logout;
-        private Long id;
+        private Long userId;
     }
 
     @NoArgsConstructor
@@ -60,11 +60,11 @@ public class RespDto {
     @NoArgsConstructor
     public static class LoginRespDto{
         public LoginRespDto(User user) {
-            this.id = user.getId();
+            this.userId = user.getId();
             this.name = user.getName();
         }
 
-        private Long id;
+        private Long userId;
         private String name;
     }
 
@@ -72,10 +72,10 @@ public class RespDto {
     @Getter
     public static class JoinRespDto{
         public JoinRespDto(Long id, User user){
-            this.id = id;
+            this.userId = id;
             this.name = user.getName();
         }
-        private Long id;
+        private Long userId;
         private String name;
     }
 }

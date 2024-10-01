@@ -150,6 +150,7 @@ public class RespDto {
             this.endAt = schedule.getEndAt();
             this.userId = schedule.getUser().getId();
             this.isPublic = schedule.isPublic();
+            this.createdAt = CustomUtil.localDateTimeToScheduleTime(schedule.getCreatedAt());
         }
 
         private Long id;
@@ -158,5 +159,6 @@ public class RespDto {
         private LocalDateTime endAt;
         private Long userId;
         private Boolean isPublic;
+        private String createdAt;
     }
 }

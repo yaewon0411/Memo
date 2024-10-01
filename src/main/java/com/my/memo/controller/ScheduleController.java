@@ -15,25 +15,25 @@ import static com.my.memo.dto.schedule.ReqDto.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/schedules")
+@RequestMapping("/api")
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
 
     //공개 일정 단건 조회
-    @GetMapping("/{scheduleId}")
+    @GetMapping("/schedules/{scheduleId}")
     public ResponseEntity<?> getPublicScheduleById(@PathVariable(name = "scheduleId")Long scheduleId){
         return new ResponseEntity<>(ApiUtil.success(scheduleService.findScheduleById(scheduleId)), HttpStatus.OK);
     }
 
     //일정 삭제
-    @DeleteMapping("/s/{scheduleId}")
+    @DeleteMapping("/s/schedules/{scheduleId}")
     public ResponseEntity<?> deleteSchedule(@PathVariable(name = "scheduleId")Long scheduleId, HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(scheduleService.deleteSchedule(scheduleId, session)), HttpStatus.OK);
     }
 
     //일정 수정 (내용, 시작 시간, 종료 시간)
-    @PatchMapping("/s/{scheduleId}")
+    @PatchMapping("/s/schedules/{scheduleId}")
     public ResponseEntity<?>modifySchedule(@PathVariable(name = "scheduleId")Long scheduleId,
                                            @RequestBody @Validated ScheduleModifyReqDto scheduleModifyReqDto,
                                            HttpSession session){
@@ -42,7 +42,8 @@ public class ScheduleController {
 
 
     //공개 일정 다건 조회 (필터링: 수정일, 작성자명, 또는 수정일&작성자명 동시에)
-    @GetMapping()
+    //TODO 쿼리 파라미터 유효성 검사 진행하기
+    @GetMapping("/schedules")
     public ResponseEntity<?> getAll(@RequestParam(name = "page", defaultValue = "0")Long page,
                                        @RequestParam(name = "limit", defaultValue = "10")Long limit,
                                        @RequestParam(name = "modifiedAt", required = false) String modifiedAt,
@@ -51,20 +52,20 @@ public class ScheduleController {
     }
 
     //유저 일정 다건 조회
-    @GetMapping("/s")
+    @GetMapping("/s/schedules")
     public ResponseEntity<?> getAllByUser(@RequestParam(name = "page", defaultValue = "0")Long page,
                                        @RequestParam(name = "limit", defaultValue = "10")Long limit, HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(scheduleService.findAllByUser(session, page, limit)), HttpStatus.OK);
     }
 
     //유저 일정 단건 조회
-    @GetMapping("/s/{scheduleId}")
+    @GetMapping("/s/schedules/{scheduleId}")
     public ResponseEntity<?> getUserScheduleById(@PathVariable(name = "scheduleId")Long scheduleId,  HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(scheduleService.findUserScheduleById(scheduleId, session)),HttpStatus.OK);
     }
 
     //일정 생성
-    @PostMapping("/s")
+    @PostMapping("/s/schedules")
     public ResponseEntity<?> createSchedule(@RequestBody @Valid ScheduleCreateReqDto scheduleCreateReqDto, BindingResult bindingResult,
                                             HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(scheduleService.createSchedule(scheduleCreateReqDto, session)), HttpStatus.CREATED);

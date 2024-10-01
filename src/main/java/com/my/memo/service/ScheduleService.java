@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.my.memo.dto.schedule.ReqDto.*;
@@ -317,9 +318,14 @@ public class ScheduleService {
                     () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
             );
 
+            LocalDateTime localDateTime = LocalDateTime.now();
+
+
             Schedule schedule = Schedule.builder()
                     .startAt(CustomUtil.scheduleTimeToLocalDateTime(scheduleCreateReqDto.getStartAt()))
                     .endAt(CustomUtil.scheduleTimeToLocalDateTime(scheduleCreateReqDto.getEndAt()))
+                    .createdAt(localDateTime)
+                    .lastModifiedAt(localDateTime)
                     .content(scheduleCreateReqDto.getContent())
                     .user(userPS)
                     .isPublic(scheduleCreateReqDto.getIsPublic())

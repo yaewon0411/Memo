@@ -20,8 +20,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         log.debug("디버그: authInterceptor 등록");
         registry.addInterceptor(authInterceptor)
-                .addPathPatterns("/api/schedules/s/**", "/api/users/s/**")
-                .excludePathPatterns("/api/users/join", "/api/users/login");
+                .addPathPatterns("/api/s/**")
+                .excludePathPatterns("/api/users/**", "/api/schedules/**");
     }
 
 }
