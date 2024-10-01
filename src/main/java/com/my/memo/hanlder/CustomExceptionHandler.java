@@ -21,17 +21,6 @@ public class CustomExceptionHandler {
 
     private final static Logger log = LoggerFactory.getLogger(CustomExceptionHandler.class);
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return new ResponseEntity<>(ApiUtil.error(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), errors), HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(CustomApiException.class)
     public ResponseEntity<?> apiException(CustomApiException e){
         return new ResponseEntity<>(ApiUtil.error(e.getStatus(), e.getMsg()), HttpStatusCode.valueOf(e.getStatus()));
