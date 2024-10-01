@@ -127,6 +127,7 @@ public class RespDto {
             this.id = schedule.getId();
             this.createdAt = CustomUtil.localDateTimeToScheduleTime(schedule.getCreatedAt());
             this.modifiedAt = CustomUtil.localDateTimeToScheduleTime(schedule.getLastModifiedAt());
+            this.name = schedule.getUser().getName();
         }
 
         private Long id;
@@ -136,6 +137,7 @@ public class RespDto {
         private Boolean isPublic;
         private String createdAt;
         private String modifiedAt;
+        private String name;
     }
     @NoArgsConstructor
     @Getter
@@ -147,6 +149,7 @@ public class RespDto {
             this.startAt = schedule.getStartAt();
             this.endAt = schedule.getEndAt();
             this.userId = schedule.getUser().getId();
+            this.isPublic = schedule.isPublic();
         }
 
         private Long id;
@@ -154,5 +157,6 @@ public class RespDto {
         private LocalDateTime startAt;
         private LocalDateTime endAt;
         private Long userId;
+        private Boolean isPublic;
     }
 }

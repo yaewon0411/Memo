@@ -2,14 +2,12 @@ package com.my.memo.domain.schedule;
 
 import com.my.memo.domain.user.User;
 import com.my.memo.ex.CustomApiException;
-import com.my.memo.util.CustomUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.FileSystemLoopException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +17,9 @@ import static com.my.memo.dto.schedule.ReqDto.*;
 
 @Service
 @RequiredArgsConstructor
-public class ScheduleRepositoryImpl {
+public class ScheduleRepository {
 
-    private static final Logger log = LoggerFactory.getLogger(ScheduleRepositoryImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(ScheduleRepository.class);
 
     public Optional<Schedule> findById(Connection connection, Long id) throws SQLException {
         String sql = "select s.schedule_id, s.content, s.start_at, s.end_at, s.is_public, s.created_at, s.last_modified_at, " +
@@ -93,7 +91,7 @@ public class ScheduleRepositoryImpl {
     }
 
     public List<Schedule> findAllByUserIdWithPagination(Connection connection, Long userId, long limit, long offset) throws SQLException {
-        String sql = "select * from schedule where user_id = ? order by schedule_id desc limit ? offset ?";
+        String sql = "select * from schedule where user_id = ? order by last_modified_at desc limit ? offset ?";
         List<Schedule> scheduleList = new ArrayList<>();
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql)
@@ -145,7 +143,7 @@ public class ScheduleRepositoryImpl {
             parameters.add(scheduleModifyReqDto.getIsPublic());
         }
         sql.append("last_modified_at = now() ");
-        sql.append("WHERE schedule_id = ?");
+        sql.append("where schedule_id = ?");
 
         parameters.add(scheduleId);
 
@@ -226,9 +224,11 @@ public class ScheduleRepositoryImpl {
             parameters.add("%" + authorName + "%");
         }
 
-        sql.append("order by  s.schedule_id desc limit ? offset ?");
+        sql.append("order by  s.last_modified_at desc limit ? offset ?"); //수정일 기준 내림차순 정렬
         parameters.add(limit);
         parameters.add(offset);
+
+        log.info("조회 쿼리: {}",sql.toString());
 
         List<Schedule> scheduleList = new ArrayList<>();
 
@@ -264,5 +264,21 @@ public class ScheduleRepositoryImpl {
             log.error("전체 공개 일정 조회 중 오류 발생: " + e.getMessage());
             throw new SQLException("전체 일정 조회 중 오류 발생");
         }
+    }
+
+    public void deleteByUser(Connection connection, User userPS) throws SQLException {
+        String sql = "delete from schedule where user_id = ?";
+
+        try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+            pstmt.setLong(1, userPS.getId());
+
+            pstmt.executeUpdate();
+            log.info("유저 전체 일정 삭제 완료: 유저 ID {}", userPS.getId());
+
+        }catch (SQLException e){
+            log.error("유저 삭제 중 오류 발생: "+e.getMessage());
+            throw new SQLException("유저 삭제 중 오류 발생");
+        }
+
     }
 }

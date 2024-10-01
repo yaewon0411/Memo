@@ -63,7 +63,7 @@ public class ReqDto {
     public static class ScheduleCreateReqDto{
 
         @NotBlank(message = "할 일을 입력해야 합니다")
-        @Size(min = 1, max = 512)
+        @Size(min = 1, max = 512, message = "1자에서 512자 사이로 입력해야 합니다")
         private String content;
 
         @Pattern(regexp = "^(19|20)\\d\\d-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])\\s([01]\\d|2[0-3]):([0-5]\\d)$",

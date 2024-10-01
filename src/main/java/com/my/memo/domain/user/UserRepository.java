@@ -1,6 +1,8 @@
 package com.my.memo.domain.user;
 
+import com.my.memo.dto.user.ReqDto;
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +10,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import static com.my.memo.dto.user.ReqDto.*;
+import static com.my.memo.service.UserService.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -102,7 +109,7 @@ public class UserRepository {
                             .id(resultSet.getLong("user_id"))
                             .name(resultSet.getString("name"))
                             .email(resultSet.getString("email"))
-                            .password(resultSet.getString("password"))
+                            .createdAt(resultSet.getTimestamp("created_at").toLocalDateTime())
                             .build());
                 }
                 else return Optional.empty();
@@ -110,6 +117,60 @@ public class UserRepository {
         } catch (SQLException e) {
             log.error("아이디로 유저 조회 중 오류 발생: " + e.getMessage());
             throw new SQLException("아이디로 유저 조회 중 오류 발생");
+        }
+    }
+
+    public void update(Connection connection, UserModifyReqDto userModifyReqDto, Long userId) throws SQLException {
+        StringBuilder sql = new StringBuilder("update users set ");
+        List<Object> parameters = new ArrayList<>();
+
+        if(userModifyReqDto.getName() != null){
+            sql.append("name = ?, ");
+            parameters.add(userModifyReqDto.getName());
+        }
+        if(userModifyReqDto.getEmail() != null){
+            sql.append("email = ?, ");
+            parameters.add(userModifyReqDto.getEmail());
+        }
+        if(userModifyReqDto.getPassword() != null){
+            sql.append("password = ?, ");
+            parameters.add(userModifyReqDto.getEncodedPassword());
+        }
+
+        sql.append("last_modified_at = now() ");
+        sql.append("where user_id = ?");
+
+        parameters.add(userId);
+
+        try(PreparedStatement pstmt = connection.prepareStatement(sql.toString())){
+
+            for(int i = 0;i<parameters.size();i++){
+                pstmt.setObject(i+1, parameters.get(i));
+            }
+
+            pstmt.executeUpdate();
+            log.info("유저 ID: {} 수정 완료",userId);
+
+        }catch (SQLException e){
+            log.error("유저 정보 수정 중 오류 발생: "+e.getMessage());
+            throw new SQLException("유저 정보 수정 중 오류 발생");
+        }
+
+    }
+
+    public void delete(Connection connection, User userPS) throws SQLException {
+        String sql = "delete from users where user_id = ?";
+
+        try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+
+            pstmt.setLong(1, userPS.getId());
+
+            pstmt.executeUpdate();
+            log.info("유저 삭제 완료: 유저 ID {}", userPS.getId());
+
+        }catch (SQLException e){
+            log.error("유저 삭제 중 오류 발생: "+e.getMessage());
+            throw new SQLException("유저 삭제 중 오류 발생");
         }
     }
 }

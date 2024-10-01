@@ -15,6 +15,26 @@ public class ReqDto {
 
     @NoArgsConstructor
     @Getter
+    public static class UserModifyReqDto{
+
+        @Size(min = 2, max = 10, message = "이름은 2자 이상 10자 이하로 입력해야 합니다 ")
+        @Pattern(regexp = "^[a-zA-Z가-힣]+$", message = "이름은 영문 또는 한글만 입력 가능합니다")
+        private String name;
+
+        @Email(message = "이메일 형식이 올바르지 않습니다")
+        private String email;
+
+        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,15}$", message = "영문자와 숫자를 포함하여 6자 이상 15자 이하여야 합니다")
+        private String password; //영문자+숫자 조합 최소 6~15자
+
+        public String getEncodedPassword(){
+            return CustomPasswordUtil.encode(this.password);
+        }
+
+    }
+
+    @NoArgsConstructor
+    @Getter
     public static class LoginReqDto{
         @Email(message = "이메일 형식이 올바르지 않습니다")
         @NotBlank(message = "이메일을 입력해야 합니다")

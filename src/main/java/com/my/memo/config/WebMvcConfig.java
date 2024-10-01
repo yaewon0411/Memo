@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -19,7 +20,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         log.debug("디버그: authInterceptor 등록");
         registry.addInterceptor(authInterceptor)
-                .addPathPatterns("/schedules/s/**")
+                .addPathPatterns("/api/schedules/s/**", "/api/users/s/**")
                 .excludePathPatterns("/api/users/join", "/api/users/login");
     }
+
 }
