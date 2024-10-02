@@ -92,15 +92,59 @@ public class ScheduleRepository {
 
     }
 
-    public List<Schedule> findAllByUserIdWithPagination(Connection connection, Long userId, long limit, long offset) throws SQLException {
-        String sql = "select * from schedule where user_id = ? order by last_modified_at desc limit ? offset ?";
+
+    public List<Schedule> findAllByUserIdWithPagination(Connection connection, Long userId, long limit, long offset, String modifiedAt) throws SQLException {
+        StringBuilder sql = new StringBuilder("select * from schedule where user_id = ? ");
+        List<Object> parameters = new ArrayList<>();
+        parameters.add(userId);
+
+        if (modifiedAt != null && !modifiedAt.isEmpty()) {
+            switch (modifiedAt) {
+                case "30m":
+                    sql.append("and last_modified_at >= NOW() - INTERVAL 30 MINUTE ");
+                    break;
+                case "1h":
+                    sql.append("and last_modified_at >= NOW() - INTERVAL 1 HOUR ");
+                    break;
+                case "1d":
+                    sql.append("and last_modified_at >= NOW() - INTERVAL 1 DAY ");
+                    break;
+                case "1w":
+                    sql.append("and last_modified_at >= NOW() - INTERVAL 1 WEEK ");
+                    break;
+                case "1m":
+                    sql.append("and last_modified_at >= NOW() - INTERVAL 1 MONTH ");
+                    break;
+                case "3m":
+                    sql.append("and last_modified_at >= NOW() - INTERVAL 3 MONTH ");
+                    break;
+                case "6m":
+                    sql.append("and last_modified_at >= NOW() - INTERVAL 6 MONTH ");
+                    break;
+                default:
+                    if (modifiedAt.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
+                        sql.append("and last_modified_at >= ? ");
+                        parameters.add(modifiedAt + " 00:00:00");
+                    }
+                    break;
+            }
+        }
+
+        sql.append("order by last_modified_at desc limit ? offset ?");
+        parameters.add(limit);
+        parameters.add(offset);
+
         List<Schedule> scheduleList = new ArrayList<>();
 
-        try(PreparedStatement pstmt = connection.prepareStatement(sql)
+        try(PreparedStatement pstmt = connection.prepareStatement(sql.toString())
         ){
-            pstmt.setLong(1, userId);
-            pstmt.setLong(2, limit);
-            pstmt.setLong(3, offset);
+            for (int i = 0; i < parameters.size(); i++) {
+                if (parameters.get(i) instanceof Long) {
+                    pstmt.setLong(i + 1, (Long) parameters.get(i));
+                } else if (parameters.get(i) instanceof String) {
+                    pstmt.setString(i + 1, (String) parameters.get(i));
+                }
+            }
 
             try(ResultSet resultSet = pstmt.executeQuery()){
                 while (resultSet.next()) {
