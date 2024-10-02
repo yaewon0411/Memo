@@ -93,14 +93,14 @@ public class ScheduleRepository {
     }
 
 
-    public List<Schedule> findAllByUserIdWithPagination(Connection connection, Long userId, long limit, long offset, String modifiedAt) throws SQLException {
+    public List<Schedule> findAllByUserIdWithPagination(Connection connection, Long userId, long limit, long offset, String modifiedAt, String startModifiedAt, String endModifiedAt) throws SQLException {
         StringBuilder sql = new StringBuilder("select * from schedule where user_id = ? ");
         List<Object> parameters = new ArrayList<>();
         parameters.add(userId);
 
         if (modifiedAt != null && !modifiedAt.isEmpty()) {
             switch (modifiedAt) {
-                case "30m":
+                case"30m" :
                     sql.append("and last_modified_at >= NOW() - INTERVAL 30 MINUTE ");
                     break;
                 case "1h":
@@ -121,13 +121,19 @@ public class ScheduleRepository {
                 case "6m":
                     sql.append("and last_modified_at >= NOW() - INTERVAL 6 MONTH ");
                     break;
-                default:
-                    if (modifiedAt.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
-                        sql.append("and last_modified_at >= ? ");
-                        parameters.add(modifiedAt + " 00:00:00");
-                    }
-                    break;
             }
+        }
+
+        else if (startModifiedAt != null && endModifiedAt != null) {
+            sql.append("and last_modified_at between ? and ? ");
+            parameters.add(startModifiedAt + " 00:00:00");
+            parameters.add(endModifiedAt + " 23:59:59");
+        } else if (startModifiedAt != null) {
+            sql.append("and last_modified_at >= ? ");
+            parameters.add(startModifiedAt + " 00:00:00");
+        } else if (endModifiedAt != null) {
+            sql.append("and last_modified_at <= ? ");
+            parameters.add(endModifiedAt + " 23:59:59");
         }
 
         sql.append("order by last_modified_at desc limit ? offset ?");
@@ -224,7 +230,7 @@ public class ScheduleRepository {
         }
     }
 
-    public List<Schedule> findAll(Connection connection, long limit, long offset, String modifiedAt, String authorName) throws SQLException {
+    public List<Schedule> findAll(Connection connection, long limit, long offset, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt) throws SQLException {
         StringBuilder sql = new StringBuilder("select s.schedule_id, s.content, s.start_at, s.end_at, s.is_public, s.last_modified_at, s.created_at, " +
                 "u.user_id, u.name, u.email " +
                 "from schedule s join users u on s.user_id = u.user_id " +
@@ -256,15 +262,21 @@ public class ScheduleRepository {
                 case "6m":
                     sql.append("and s.last_modified_at >= NOW() - INTERVAL 6 MONTH ");
                     break;
-                default:
-                    // 특정 기간 입력한 경우 -> 그 이전으로 끌고 올 것
-                    if (modifiedAt.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
-                        sql.append("and s.last_modified_at >= ? ");
-                        parameters.add(modifiedAt + " 00:00:00");
-                    }
-                    break;
             }
         }
+
+        else if (startModifiedAt != null && endModifiedAt != null) {
+            sql.append("and s.last_modified_at between ? and ? ");
+            parameters.add(startModifiedAt + " 00:00:00");
+            parameters.add(endModifiedAt + " 23:59:59");
+        } else if (startModifiedAt != null) {
+            sql.append("and s.last_modified_at >= ? ");
+            parameters.add(startModifiedAt + " 00:00:00");
+        } else if (endModifiedAt != null) {
+            sql.append("and s.last_modified_at <= ? ");
+            parameters.add(endModifiedAt + " 23:59:59");
+        }
+
         if (authorName != null && !authorName.isEmpty()) {
             sql.append("and u.name like ? ");
             parameters.add("%" + authorName + "%");

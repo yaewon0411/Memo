@@ -62,7 +62,7 @@ public class ScheduleService {
 
     // 메인 페이지에서 일정 검색 (필터: 수정일, 작성자명) -> 세션 검사 필요 없음
     // isPublic = true인 것들만 대상
-    public ScheduleListRespDto findAll(long page, long limit, String modifiedAt, String authorName){
+    public ScheduleListRespDto findAll(long page, long limit, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt){
 
         Connection connection = null;
         try{
@@ -70,7 +70,7 @@ public class ScheduleService {
 
             long offset = page * limit;
 
-            List<Schedule> scheduleList = scheduleRepository.findAll(connection, limit+1, offset, modifiedAt, authorName);
+            List<Schedule> scheduleList = scheduleRepository.findAll(connection, limit+1, offset, modifiedAt, authorName, startModifiedAt, endModifiedAt);
 
             boolean hasNextPage = false;
 
@@ -222,7 +222,7 @@ public class ScheduleService {
      * 처음 2 페이지 -> 10개 내보냄 (21~30)
      *
      * */
-    public UserScheduleListRespDto findAllByUser(HttpSession session, long page, long limit, String modifiedAt){
+    public UserScheduleListRespDto findAllByUser(HttpSession session, long page, long limit, String modifiedAt, String startModifiedAt, String endModifiedAt){
         //유저 꺼내기
         Long userId = (Long) session.getAttribute("userId");
         log.info("유저 ID: {}", userId);
@@ -237,7 +237,7 @@ public class ScheduleService {
 
             long offset = page * limit;
 
-            List<Schedule> scheduleList = scheduleRepository.findAllByUserIdWithPagination(connection, userId, limit+1, offset, modifiedAt);
+            List<Schedule> scheduleList = scheduleRepository.findAllByUserIdWithPagination(connection, userId, limit+1, offset, modifiedAt, startModifiedAt, endModifiedAt);
 
             boolean hasNextPage = false;
 

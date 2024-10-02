@@ -44,19 +44,23 @@ public class ScheduleController {
     public ResponseEntity<?> getAll(
             @RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
             @RequestParam(name = "limit", defaultValue = "10") @Min(1) Long limit,
-            @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m|\\d{4}-\\d{2}-\\d{2})?$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
+            @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m)$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
+            @RequestParam(name = "startModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String startModifiedAt,
+            @RequestParam(name = "endModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String endModifiedAt,
             @RequestParam(name = "authorName", required = false) String authorName) {
 
-        return new ResponseEntity<>(ApiUtil.success(scheduleService.findAll(page, limit, modifiedAt, authorName)), HttpStatus.OK);
+        return new ResponseEntity<>(ApiUtil.success(scheduleService.findAll(page, limit, modifiedAt, authorName, startModifiedAt, endModifiedAt)), HttpStatus.OK);
     }
 
     //유저 일정 다건 조회
     @GetMapping("/s/schedules")
     public ResponseEntity<?> getAllByUser(@RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
                                           @RequestParam(name = "limit", defaultValue = "10") @Min(1) Long limit,
-                                          @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m|\\d{4}-\\d{2}-\\d{2})?$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
+                                          @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m)$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
+                                          @RequestParam(name = "startModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String startModifiedAt,
+                                          @RequestParam(name = "endModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String endModifiedAt,
                                           HttpSession session){
-        return new ResponseEntity<>(ApiUtil.success(scheduleService.findAllByUser(session, page, limit, modifiedAt)), HttpStatus.OK);
+        return new ResponseEntity<>(ApiUtil.success(scheduleService.findAllByUser(session, page, limit, modifiedAt, startModifiedAt, endModifiedAt)), HttpStatus.OK);
     }
 
     //일정 단건 조회
