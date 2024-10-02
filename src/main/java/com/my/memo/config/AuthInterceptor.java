@@ -24,9 +24,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         String uri = request.getRequestURI();
         log.info("요청 URI: " + uri);
 
-        if (uri.equals("/api/users/join") || uri.equals("/api/users/login")) {
-            return true;
-        }
         HttpSession session = request.getSession();
 
         //세션에 유저 정보 있으면
