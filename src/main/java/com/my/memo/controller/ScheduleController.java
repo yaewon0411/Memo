@@ -52,9 +52,11 @@ public class ScheduleController {
 
     //유저 일정 다건 조회
     @GetMapping("/s/schedules")
-    public ResponseEntity<?> getAllByUser(@RequestParam(name = "page", defaultValue = "0")Long page,
-                                       @RequestParam(name = "limit", defaultValue = "10")Long limit, HttpSession session){
-        return new ResponseEntity<>(ApiUtil.success(scheduleService.findAllByUser(session, page, limit)), HttpStatus.OK);
+    public ResponseEntity<?> getAllByUser(@RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
+                                          @RequestParam(name = "limit", defaultValue = "10") @Min(1) Long limit,
+                                          @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m|\\d{4}-\\d{2}-\\d{2})?$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
+                                          HttpSession session){
+        return new ResponseEntity<>(ApiUtil.success(scheduleService.findAllByUser(session, page, limit, modifiedAt)), HttpStatus.OK);
     }
 
     //일정 단건 조회

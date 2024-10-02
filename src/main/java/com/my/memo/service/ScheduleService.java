@@ -222,7 +222,7 @@ public class ScheduleService {
      * 처음 2 페이지 -> 10개 내보냄 (21~30)
      *
      * */
-    public UserScheduleListRespDto findAllByUser(HttpSession session, long page, long limit){
+    public UserScheduleListRespDto findAllByUser(HttpSession session, long page, long limit, String modifiedAt){
         //유저 꺼내기
         Long userId = (Long) session.getAttribute("userId");
         log.info("유저 ID: {}", userId);
@@ -237,7 +237,7 @@ public class ScheduleService {
 
             long offset = page * limit;
 
-            List<Schedule> scheduleList = scheduleRepository.findAllByUserIdWithPagination(connection, userId, limit+1, offset);
+            List<Schedule> scheduleList = scheduleRepository.findAllByUserIdWithPagination(connection, userId, limit+1, offset, modifiedAt);
 
             boolean hasNextPage = false;
 
