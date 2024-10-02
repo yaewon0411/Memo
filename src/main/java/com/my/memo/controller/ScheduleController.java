@@ -41,7 +41,7 @@ public class ScheduleController {
     //공개 일정 다건 조회 (필터링: 수정일, 작성자명, 또는 수정일&작성자명 동시에)
     //TODO 쿼리 파라미터 유효성 검사 진행하기
     @GetMapping("/schedules")
-    public ResponseEntity<?> getAll(
+    public ResponseEntity<?> getAllPublicSchedules(
             @RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
             @RequestParam(name = "limit", defaultValue = "10") @Min(1) Long limit,
             @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m)$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
@@ -54,7 +54,7 @@ public class ScheduleController {
 
     //유저 일정 다건 조회
     @GetMapping("/s/schedules")
-    public ResponseEntity<?> getAllByUser(@RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
+    public ResponseEntity<?> getAllUserSchedules(@RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
                                           @RequestParam(name = "limit", defaultValue = "10") @Min(1) Long limit,
                                           @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m)$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
                                           @RequestParam(name = "startModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String startModifiedAt,
@@ -65,7 +65,7 @@ public class ScheduleController {
 
     //일정 단건 조회
     @GetMapping("/s/schedules/{scheduleId}")
-    public ResponseEntity<?> getUserScheduleById(@PathVariable(name = "scheduleId")Long scheduleId,  HttpSession session){
+    public ResponseEntity<?> findUserScheduleById(@PathVariable(name = "scheduleId")Long scheduleId,  HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(scheduleService.findUserScheduleById(scheduleId, session)),HttpStatus.OK);
     }
 
