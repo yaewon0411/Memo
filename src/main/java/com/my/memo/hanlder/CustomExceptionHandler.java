@@ -4,6 +4,7 @@ import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.CustomValidationException;
 import com.my.memo.util.api.ApiUtil;
 import jakarta.validation.ConstraintViolationException;
+import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -39,5 +40,13 @@ public class CustomExceptionHandler {
     @ExceptionHandler(CustomValidationException.class)
     public ResponseEntity<?> validationException(CustomValidationException e){
         return new ResponseEntity<>(ApiUtil.error(HttpStatus.BAD_REQUEST.value(), e.getMessage(), e.getErrorMap()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> queryParameterValidationException(ConstraintViolationException e){
+        Map<String, String> errorMap = new HashMap<>();
+        e.getConstraintViolations().forEach(error ->
+                errorMap.put(((PathImpl)(error.getPropertyPath())).getLeafNode().getName(), error.getMessage()));
+        return new ResponseEntity<>(ApiUtil.error(HttpStatus.BAD_REQUEST.value(), "유효성 검사 실패", errorMap), HttpStatus.BAD_REQUEST);
     }
 }
