@@ -6,8 +6,6 @@ import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.CustomPasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +124,7 @@ public class UserService {
 
 
     //유저 정보 수정
-    public UserModifyRespDto modifyUserInfo(UserModifyReqDto userModifyReqDto, HttpSession session){
+    public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, HttpSession session){
 
         //유저 꺼내기
         Long userId = (Long) session.getAttribute("userId");
