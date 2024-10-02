@@ -24,7 +24,7 @@ public class ScheduleRepository {
     public Optional<Schedule> findById(Connection connection, Long id) throws SQLException {
         String sql = "select s.schedule_id, s.content, s.start_at, s.end_at, s.is_public, s.created_at, s.last_modified_at, " +
                 "u.user_id, u.name, u.email " +
-                "from schedule s join users u on s.user_id = u.user_id " +
+                "from schedules s join users u on s.user_id = u.user_id " +
                 "where s.schedule_id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -61,7 +61,7 @@ public class ScheduleRepository {
     }
 
     public Long save(Connection connection, Schedule schedule) throws SQLException {
-        String sql = "insert into schedule (content, start_at, end_at, user_id, is_public, created_at, last_modified_at) values (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "insert into schedules (content, start_at, end_at, user_id, is_public, created_at, last_modified_at) values (?, ?, ?, ?, ?, ?, ?)";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
@@ -94,7 +94,7 @@ public class ScheduleRepository {
 
 
     public List<Schedule> findAllByUserIdWithPagination(Connection connection, Long userId, long limit, long offset, String modifiedAt, String startModifiedAt, String endModifiedAt) throws SQLException {
-        StringBuilder sql = new StringBuilder("select * from schedule where user_id = ? ");
+        StringBuilder sql = new StringBuilder("select * from schedules where user_id = ? ");
         List<Object> parameters = new ArrayList<>();
         parameters.add(userId);
 
@@ -174,7 +174,7 @@ public class ScheduleRepository {
     }
 
     public void update(Connection connection, Long scheduleId, ScheduleModifyReqDto scheduleModifyReqDto) throws SQLException {
-        StringBuilder sql = new StringBuilder("update schedule set ");
+        StringBuilder sql = new StringBuilder("update schedules set ");
         List<Object> parameters = new ArrayList<>();
 
 
@@ -215,7 +215,7 @@ public class ScheduleRepository {
     }
 
     public void deleteById(Connection connection,  Long scheduleId) {
-        String sql = "delete from schedule where schedule_id = ?";
+        String sql = "delete from schedules where schedule_id = ?";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql)){
 
@@ -230,10 +230,10 @@ public class ScheduleRepository {
         }
     }
 
-    public List<Schedule> findAll(Connection connection, long limit, long offset, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt) throws SQLException {
+    public List<Schedule> findPublicSchedulesWithFilters(Connection connection, long limit, long offset, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt) throws SQLException {
         StringBuilder sql = new StringBuilder("select s.schedule_id, s.content, s.start_at, s.end_at, s.is_public, s.last_modified_at, s.created_at, " +
                 "u.user_id, u.name, u.email " +
-                "from schedule s join users u on s.user_id = u.user_id " +
+                "from schedules s join users u on s.user_id = u.user_id " +
                 "where is_public = ? ");
         List<Object> parameters = new ArrayList<>();
 
@@ -325,7 +325,7 @@ public class ScheduleRepository {
     }
 
     public void deleteByUser(Connection connection, User userPS) throws SQLException {
-        String sql = "delete from schedule where user_id = ?";
+        String sql = "delete from schedules where user_id = ?";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql)){
             pstmt.setLong(1, userPS.getId());

@@ -20,6 +20,7 @@ import static com.my.memo.service.ScheduleService.*;
 @Getter
 @AllArgsConstructor
 @SuperBuilder
+@Table(name = "schedules")
 public class Schedule extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
