@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -22,7 +21,7 @@ public class UserController {
     private final UserService userService;
 
     //로그아웃
-    @PostMapping("/s/users/logout")
+    @PostMapping("/s/logout")
     public ResponseEntity<?>logout(HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(userService.logout(session)), HttpStatus.OK);
     }
@@ -41,19 +40,19 @@ public class UserController {
 
     //정보 수정
     @PatchMapping("/s/users")
-    public ResponseEntity<?> modifyUserInfo(@RequestBody @Valid UserModifyReqDto userModifyReqDto, BindingResult bindingResult,
+    public ResponseEntity<?> updateUser(@RequestBody @Valid UserModifyReqDto userModifyReqDto, BindingResult bindingResult,
                                             HttpSession session){
-        return new ResponseEntity<>(ApiUtil.success(userService.modifyUserInfo(userModifyReqDto, session)), HttpStatus.OK);
+        return new ResponseEntity<>(ApiUtil.success(userService.updateUser(userModifyReqDto, session)), HttpStatus.OK);
     }
 
     //회원가입
-    @PostMapping("/users/join")
+    @PostMapping("/join")
     public ResponseEntity<?> join(@ModelAttribute @Valid JoinReqDto joinReqDto, BindingResult bindingResult){
         return new ResponseEntity<>(ApiUtil.success(userService.join(joinReqDto)), HttpStatus.CREATED);
     }
 
     // 로그인
-    @PostMapping("/users/login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginReqDto loginReqDto, BindingResult bindingResult,
                                    HttpServletRequest request){
         return new ResponseEntity<>(ApiUtil.success(userService.login(loginReqDto, request)), HttpStatus.OK);
