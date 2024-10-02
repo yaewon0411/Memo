@@ -262,25 +262,23 @@ public class ScheduleService {
     }
 
 
-    //선택한 일정 조회 (스케줄 아이디로)
+    //선택한 일정 조회 (세션에 유저 정보 없으면 -> 공개 일정 여부 검증 후 반환)
     public ScheduleRespDto findUserScheduleById(Long scheduleId, HttpSession session){
 
         //유저 꺼내기
         Long userId = (Long) session.getAttribute("userId");
 
-        if(userId == null)
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "로그인이 필요합니다");
-
         Connection connection = null;
         try{
             connection = dataSource.getConnection();
+
             //해당 일정 조회
             Schedule schedulePS = scheduleRepository.findById(connection, scheduleId).orElseThrow(
                     () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
             );
 
-            //해당 유저의 일정 아니면 에러
-            if(!schedulePS.getUser().getId().equals(userId))
+            //비공개 일정인데 해당 유저의 일정이 아니면 에러
+            if(!schedulePS.isPublic() && !schedulePS.getUser().getId().equals(userId))
                 throw new CustomApiException(HttpStatus.FORBIDDEN.value(), "해당 일정에 접근할 권한이 없습니다");
 
             return new ScheduleRespDto(schedulePS);

@@ -4,6 +4,8 @@ import com.my.memo.service.ScheduleService;
 import com.my.memo.util.api.ApiUtil;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,15 +18,10 @@ import static com.my.memo.dto.schedule.ReqDto.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
+@Validated
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
-
-    //공개 일정 단건 조회
-    @GetMapping("/schedules/{scheduleId}")
-    public ResponseEntity<?> getPublicScheduleById(@PathVariable(name = "scheduleId")Long scheduleId){
-        return new ResponseEntity<>(ApiUtil.success(scheduleService.findScheduleById(scheduleId)), HttpStatus.OK);
-    }
 
     //일정 삭제
     @DeleteMapping("/s/schedules/{scheduleId}")
@@ -44,10 +41,12 @@ public class ScheduleController {
     //공개 일정 다건 조회 (필터링: 수정일, 작성자명, 또는 수정일&작성자명 동시에)
     //TODO 쿼리 파라미터 유효성 검사 진행하기
     @GetMapping("/schedules")
-    public ResponseEntity<?> getAll(@RequestParam(name = "page", defaultValue = "0")Long page,
-                                       @RequestParam(name = "limit", defaultValue = "10")Long limit,
-                                       @RequestParam(name = "modifiedAt", required = false) String modifiedAt,
-                                       @RequestParam(name = "authorName", required = false) String authorName){
+    public ResponseEntity<?> getAll(
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
+            @RequestParam(name = "limit", defaultValue = "10") @Min(1) Long limit,
+            @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m|\\d{4}-\\d{2}-\\d{2})?$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
+            @RequestParam(name = "authorName", required = false) String authorName) {
+
         return new ResponseEntity<>(ApiUtil.success(scheduleService.findAll(page, limit, modifiedAt, authorName)), HttpStatus.OK);
     }
 
@@ -58,7 +57,7 @@ public class ScheduleController {
         return new ResponseEntity<>(ApiUtil.success(scheduleService.findAllByUser(session, page, limit)), HttpStatus.OK);
     }
 
-    //유저 일정 단건 조회
+    //일정 단건 조회
     @GetMapping("/s/schedules/{scheduleId}")
     public ResponseEntity<?> getUserScheduleById(@PathVariable(name = "scheduleId")Long scheduleId,  HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(scheduleService.findUserScheduleById(scheduleId, session)),HttpStatus.OK);
