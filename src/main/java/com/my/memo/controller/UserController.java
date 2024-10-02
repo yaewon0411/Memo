@@ -2,15 +2,15 @@ package com.my.memo.controller;
 
 import com.my.memo.service.UserService;
 import com.my.memo.util.api.ApiUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.sql.ResultSet;
 
 import static com.my.memo.dto.user.ReqDto.*;
 
@@ -55,8 +55,8 @@ public class UserController {
     // 로그인
     @PostMapping("/users/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginReqDto loginReqDto, BindingResult bindingResult,
-                                   HttpSession session){
-        return new ResponseEntity<>(ApiUtil.success(userService.login(loginReqDto,session )), HttpStatus.OK);
+                                   HttpServletRequest request){
+        return new ResponseEntity<>(ApiUtil.success(userService.login(loginReqDto, request)), HttpStatus.OK);
     }
 
 }

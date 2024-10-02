@@ -4,6 +4,7 @@ import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.CustomPasswordUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Optional;
+import java.util.*;
 
 import static com.my.memo.dto.user.ReqDto.*;
 import static com.my.memo.dto.user.RespDto.*;
@@ -228,7 +229,15 @@ public class UserService {
     }
 
     //로그인
-    public LoginRespDto login(LoginReqDto loginReqDto, HttpSession session){
+    public LoginRespDto login(LoginReqDto loginReqDto, HttpServletRequest request){
+
+        HttpSession session = request.getSession(false);
+
+        //이전 세션 무효화
+        if (session != null)
+            session.invalidate();
+
+        session = request.getSession(true);
 
         Connection connection = null;
 
