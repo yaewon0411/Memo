@@ -107,7 +107,8 @@ public class ScheduleController {
     }
 
     /**
-     * 일정 ID로 현재 사용자의 특정 일정을 조회합니다
+     * 일정 ID로 특정 일정을 조회합니다
+     * 세션에 유저 정보가 없을 경우, 일정의 공개 여부를 확인하여 반환합니다
      *
      * @param scheduleId 조회할 일정의 ID
      * @param session 현재 사용자의 세션
