@@ -57,7 +57,7 @@ public class UserRepository {
             }
 
         }catch (SQLException e){
-            log.error("유저 저장 중 오류 발생: " + e.getMessage());
+            log.error(e.getMessage());
             throw e;
         }
 
@@ -84,7 +84,7 @@ public class UserRepository {
             }
         } catch (SQLException e) {
             log.error("이메일 중복 검사 중 오류 발생: " + e.getMessage());
-            throw new SQLException("이메일 중복 검사 중 오류 발생: "+e.getMessage());
+            throw e;
         }
 
     }
@@ -117,7 +117,7 @@ public class UserRepository {
             }
         } catch (SQLException e) {
             log.error("이메일로 유저 조회 중 오류 발생: " + e.getMessage());
-            throw new SQLException("이메일로 유저 조회 중 오류 발생");
+            throw e;
         }
     }
 
@@ -149,7 +149,7 @@ public class UserRepository {
             }
         } catch (SQLException e) {
             log.error("아이디로 유저 조회 중 오류 발생: " + e.getMessage());
-            throw new SQLException("아이디로 유저 조회 중 오류 발생");
+            throw e;
         }
     }
 
@@ -196,7 +196,7 @@ public class UserRepository {
 
         }catch (SQLException e){
             log.error("유저 정보 수정 중 오류 발생: "+e.getMessage());
-            throw new SQLException("유저 정보 수정 중 오류 발생");
+            throw e;
         }
 
     }
@@ -220,7 +220,7 @@ public class UserRepository {
 
         }catch (SQLException e){
             log.error("유저 삭제 중 오류 발생: "+e.getMessage());
-            throw new SQLException("유저 삭제 중 오류 발생");
+            throw e;
         }
     }
 }
