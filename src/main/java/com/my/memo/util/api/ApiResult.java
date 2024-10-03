@@ -7,6 +7,14 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+/**
+ * API 응답을 나타내는 클래스입니다
+ *
+ * API 요청의 성공 여부와 응답 데이터를 포함합니다
+ * 성공 여부에 따라 data 또는 apiError를 포함하여 응답합니다
+ *
+ * @param <T> 응답 데이터 타입
+ */
 @AllArgsConstructor
 @Builder
 @Getter
