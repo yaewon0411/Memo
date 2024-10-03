@@ -40,7 +40,6 @@ public class ScheduleController {
 
 
     //공개 일정 다건 조회 (필터링: 수정일, 작성자명, 또는 수정일&작성자명 동시에)
-    //TODO 쿼리 파라미터 유효성 검사 진행하기
     @GetMapping("/schedules")
     public ResponseEntity<?> findPublicSchedules(
             @RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
