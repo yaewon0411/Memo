@@ -21,7 +21,12 @@ import java.util.List;
 
 import static com.my.memo.dto.schedule.ReqDto.*;
 import static com.my.memo.dto.schedule.RespDto.*;
-
+/**
+ * 일정 관련 서비스 클래스입니다
+ *
+ * 일정 생성, 수정, 삭제, 조회 등의 비즈니스 로직을 처리합니다
+ * 트랜잭션 관리와 예외 처리를 직접 처리하며, 공개 일정에 대한 접근 권한을 확인하는 로직을 포함하고 있습니다
+ */
 @RequiredArgsConstructor
 @Service
 public class ScheduleService {
@@ -31,8 +36,14 @@ public class ScheduleService {
     private final DataSource dataSource;
     private final Logger log = LoggerFactory.getLogger(ScheduleService.class);
 
-    //공개 일정 단건 조회
-    // isPublic = true인 것들만 대상
+    /**
+     * 공개된 단일 일정을 조회합니다
+     *
+     * 공개된 일정(isPublic = true)만 조회할 수 있으며, 비공개 일정에 접근 시 예외를 발생시킵니다
+     *
+     * @param scheduleId 조회할 일정의 ID
+     * @return 조회된 일정 정보를 담은 DTO
+     */
     public ScheduleRespDto findPublicScheduleById(Long scheduleId){
         Connection connection = null;
         try{
@@ -60,8 +71,19 @@ public class ScheduleService {
     }
 
 
-    // 메인 페이지에서 일정 검색 (필터: 수정일, 작성자명) -> 세션 검사 필요 없음
-    // isPublic = true인 것들만 대상
+    /**
+     * 필터링된 공개 일정 목록을 조회합니다
+     *
+     * 페이지네이션과 필터링(수정일, 작성자명 등)이 적용된 공개 일정을 조회합니다
+     *
+     * @param page 페이지 번호
+     * @param limit 페이지당 일정 수
+     * @param modifiedAt 수정일 필터
+     * @param authorName 작성자명 필터
+     * @param startModifiedAt 수정일 범위의 시작 날짜
+     * @param endModifiedAt 수정일 범위의 종료 날짜
+     * @return 조회된 일정 목록과 다음 페이지 존재 여부가 담긴 DTO
+     */
     public ScheduleListRespDto findPublicSchedulesWithFilters(long page, long limit, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt){
 
         Connection connection = null;
@@ -94,7 +116,16 @@ public class ScheduleService {
     }
 
 
-    // 일정 삭제
+    /**
+     * 일정 삭제를 처리합니다
+     *
+     * 사용자가 소유한 일정만 삭제할 수 있으며, 권한이 없을 경우 예외가 발생합니다
+     * 트랜잭션을 통해 삭제 작업이 이루어지며, 예외 발생 시 롤백됩니다
+     *
+     * @param scheduleId 삭제할 일정의 ID
+     * @param session 현재 사용자의 세션
+     * @return 삭제된 여부가 담긴 응답 DTO
+     */
     public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, HttpSession session) {
         //유저 꺼내기
         Long userId = (Long) session.getAttribute("userId");
@@ -150,9 +181,17 @@ public class ScheduleService {
 
 
 
-
-
-    //할 일 수정 (내용, 시작 시간, 종료 시간, 공개 여부)
+    /**
+     * 일정을 수정합니다
+     *
+     * 사용자가 소유한 일정만 수정할 수 있으며, 트랜잭션을 통해 수정 작업이 이루어집니다
+     * 예외 발생 시 트랜잭션 롤백됩니다
+     *
+     * @param scheduleModifyReqDto 수정할 일정 정보를 담은 DTO
+     * @param scheduleId 수정할 일정의 ID
+     * @param session 현재 사용자의 세션
+     * @return 수정된 일정 정보를 담은 응답 DTO
+     */
     public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId , HttpSession session){
         //유저 꺼내기
         Long userId = (Long) session.getAttribute("userId");
@@ -211,16 +250,19 @@ public class ScheduleService {
     }
 
 
-    //해당 유저가 등록한 전체 일정 조회
-    /*
-     * 100 개의 데이터
-     * limit = 10이라 하면
+    /**
+     * 해당 사용자가 등록한 모든 일정을 페이지네이션하여 조회합니다
      *
-     * 처음 0 페이지 -> 10개 내보냄 (1~10)
-     * 처음 1 페이지 -> 10개 내보냄 (11~20)
-     * 처음 2 페이지 -> 10개 내보냄 (21~30)
+     * 일정 수정일과 기타 필터를 적용하여 일정 목록을 조회하며, 페이징하여 반환합니다
      *
-     * */
+     * @param session 현재 사용자의 세션
+     * @param page 페이지 번호
+     * @param limit 페이지당 일정 수
+     * @param modifiedAt 수정일 필터
+     * @param startModifiedAt 수정일 범위의 시작 날짜
+     * @param endModifiedAt 수정일 범위의 종료 날짜
+     * @return 조회된 일정 목록과 다음 페이지 존재 여부가 담긴 응답 DTO
+     */
     public UserScheduleListRespDto findUserSchedules(HttpSession session, long page, long limit, String modifiedAt, String startModifiedAt, String endModifiedAt){
         //유저 꺼내기
         Long userId = (Long) session.getAttribute("userId");
@@ -261,7 +303,15 @@ public class ScheduleService {
     }
 
 
-    //선택한 일정 조회 (세션에 유저 정보 없으면 -> 공개 일정 여부 검증 후 반환)
+    /**
+     * 선택한 일정을 조회합니다
+     *
+     * 세션에 유저 정보가 없을 경우, 일정의 공개 여부를 확인하여 반환합니다
+     *
+     * @param scheduleId 조회할 일정의 ID
+     * @param session 현재 사용자의 세션
+     * @return 조회된 일정 정보를 담은 응답 DTO
+     */
     public ScheduleRespDto findUserScheduleById(Long scheduleId, HttpSession session){
 
         //유저 꺼내기
@@ -296,7 +346,16 @@ public class ScheduleService {
 
 
 
-    //스케줄 생성
+    /**
+     * 새로운 일정을 생성합니다
+     *
+     * 세션에서 유저 정보를 가져와 해당 유저에 대한 새로운 일정을 생성합니다
+     * 트랜잭션을 통해 생성 작업이 이루어지며, 예외 발생 시 롤백됩니다
+     *
+     * @param scheduleCreateReqDto 생성할 일정 정보를 담은 DTO
+     * @param session 현재 사용자의 세션
+     * @return 생성된 일정 정보가 담긴 응답 DTO
+     */
     public ScheduleCreateRespDto createSchedule (ScheduleCreateReqDto scheduleCreateReqDto, HttpSession session){
 
         //유저 정보 꺼내기
