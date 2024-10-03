@@ -9,6 +9,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * DB 커넥션과 트랜잭션 처리를 담당하는 유틸 클래스입니다
+ */
 @Component
 @RequiredArgsConstructor
 public class ConnectionUtil {
@@ -17,7 +20,8 @@ public class ConnectionUtil {
     private final Logger log = LoggerFactory.getLogger(ConnectionUtil.class);
 
     /**
-     * 트랜잭션이 필요한 연결을 가져옵니다. (자동 커밋 비활성화)
+     * 자동 커밋 비활성화:
+     * 트랜잭션이 필요한 연결을 가져옵니다
      */
     public Connection getConnectionForTransaction() throws SQLException {
         Connection connection = dataSource.getConnection();
@@ -26,7 +30,8 @@ public class ConnectionUtil {
     }
 
     /**
-     * 트랜잭션이 필요 없는 연결을 가져옵니다. (자동 커밋 활성화)
+     * 자동 커밋 활성화:
+     * 트랜잭션이 필요 없는 연결을 가져옵니다
      */
     public Connection getConnectionForReadOnly() throws SQLException {
         Connection connection = dataSource.getConnection();
@@ -35,7 +40,7 @@ public class ConnectionUtil {
     }
 
     /**
-     * 트랜잭션을 커밋합니다.
+     * 트랜잭션을 커밋합니다
      *
      * @param connection 트랜잭션이 시작된 Connection 객체
      * @throws SQLException 커밋 중 오류 발생 시
@@ -47,7 +52,7 @@ public class ConnectionUtil {
     }
 
     /**
-     * 트랜잭션을 롤백합니다.
+     * 트랜잭션을 롤백합니다
      *
      * @param connection 트랜잭션이 시작된 Connection 객체
      */
@@ -63,7 +68,7 @@ public class ConnectionUtil {
     }
 
     /**
-     * Connection 객체를 안전하게 닫습니다.
+     * 커넥션을 닫습니다
      *
      * @param connection 닫을 Connection 객체
      */

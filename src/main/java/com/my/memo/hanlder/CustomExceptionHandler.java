@@ -18,7 +18,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.util.HashMap;
 import java.util.Map;
 /**
- * 전역 예외 처리를 위한 클래스입니다.
+ * 전역 예외 처리를 위한 클래스입니다
  *
  * 애플리케이션 전반에서 발생하는 예외를 처리하고, 적절한 HTTP 응답을 클라이언트에게 반환합니다
  */
