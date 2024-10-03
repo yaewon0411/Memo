@@ -36,40 +36,6 @@ public class ScheduleService {
     private final DataSource dataSource;
     private final Logger log = LoggerFactory.getLogger(ScheduleService.class);
 
-    /**
-     * 공개된 단일 일정을 조회합니다
-     *
-     * 공개된 일정(isPublic = true)만 조회할 수 있으며, 비공개 일정에 접근 시 예외를 발생시킵니다
-     *
-     * @param scheduleId 조회할 일정의 ID
-     * @return 조회된 일정 정보를 담은 DTO
-     */
-    public ScheduleRespDto findPublicScheduleById(Long scheduleId){
-        Connection connection = null;
-        try{
-            connection = dataSource.getConnection();
-            //해당 일정 조회
-            Schedule schedulePS = scheduleRepository.findById(connection, scheduleId).orElseThrow(
-                    () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-            );
-
-            if(!schedulePS.isPublic())
-                throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "접근할 수 없는 일정입니다");
-
-            return new ScheduleRespDto(schedulePS);
-        }catch (SQLException e){
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "일정 조회 중 오류 발생");
-        }finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    log.error("커넥션 닫기 중 오류 발생: " + closeEx.getMessage());
-                }
-            }
-        }
-    }
-
 
     /**
      * 필터링된 공개 일정 목록을 조회합니다
@@ -103,7 +69,7 @@ public class ScheduleService {
 
             return new ScheduleListRespDto(scheduleList, hasNextPage);
         }catch (SQLException e){
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(),e.getMessage());
+            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "전체 공개 일정 조회 중 오류 발생");
         }finally {
             if (connection != null) {
                 try {
@@ -237,7 +203,7 @@ public class ScheduleService {
             } catch (SQLException rollbackEx) {
                 log.error("롤백 중 오류 발생: " + rollbackEx.getMessage());
             }
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "일정 수정 중 오류 발생");
         }finally {
             if (connection != null) {
                 try {
@@ -290,7 +256,7 @@ public class ScheduleService {
 
             return new UserScheduleListRespDto(scheduleList, hasNextPage);
         } catch (SQLException e){
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "사용자 전체 일정 조회 중 오류 발생");
         } finally {
             if (connection != null) {
                 try {
@@ -332,7 +298,7 @@ public class ScheduleService {
 
             return new ScheduleRespDto(schedulePS);
         }catch (SQLException e){
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "일정 조회 중 오류 발생");
+            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "선택한 일정 조회 중 오류 발생");
         }finally {
             if (connection != null) {
                 try {
@@ -403,7 +369,7 @@ public class ScheduleService {
                     log.error("롤백 중 오류 발생: " + rollbackEx.getMessage());
                 }
             }
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "일정 생성 중 오류 발생");
         } finally {
             if (connection != null) {
                 try {

@@ -91,7 +91,7 @@ public class UserService {
             } catch (SQLException rollbackEx) {
                 log.error("롤백 중 오류 발생: " + rollbackEx.getMessage());
             }
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "유저 정보 수정 중 오류 발생");
+            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "유저 삭제 중 오류 발생");
         } finally {
             if (connection != null) {
                 try {
@@ -310,7 +310,7 @@ public class UserService {
             //아이디 반환
             return new LoginRespDto(userPS);
         }catch (SQLException e) {
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "이메일로 유저 조회 중 오류 발생");
         }finally {
             if (connection != null) {
                 try {
