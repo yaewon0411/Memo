@@ -1,27 +1,35 @@
 package com.my.memo.domain.schedule;
 
 import com.my.memo.domain.user.User;
-import com.my.memo.ex.CustomApiException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static com.my.memo.dto.schedule.ReqDto.*;
-
+/**
+ * 일정 관련 데이터베이스 작업을 처리하는 리포지토리 클래스입니다
+ *
+ * 일정의 생성, 조회, 수정, 삭제 등의 기능을 제공합니다
+ */
 @Repository
 @RequiredArgsConstructor
 public class ScheduleRepository {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleRepository.class);
 
+    /**
+     * 일정 ID로 일정을 조회합니다
+     *
+     * @param connection 데이터베이스 커넥션
+     * @param id 조회할 일정의 ID
+     * @return 일정 객체를 포함한 Optional 객체. 일정이 존재하지 않으면 Optional.empty()
+     * @throws SQLException 일정 조회 중 오류가 발생한 경우
+     */
     public Optional<Schedule> findById(Connection connection, Long id) throws SQLException {
         String sql = "select s.schedule_id, s.content, s.start_at, s.end_at, s.is_public, s.created_at, s.last_modified_at, " +
                 "u.user_id, u.name, u.email " +
@@ -57,10 +65,18 @@ public class ScheduleRepository {
             }
         } catch (SQLException e) {
             log.error("일정 조회 중 오류 발생: " + e.getMessage());
-            throw new SQLException("일정 조회 중 오류 발생", e);
+            throw e;
         }
     }
 
+    /**
+     * 새로운 일정을 저장합니다
+     *
+     * @param connection 데이터베이스 커넥션
+     * @param schedule 저장할 일정 객체
+     * @return 생성된 일정의 ID
+     * @throws SQLException 일정 저장 중 오류가 발생한 경우
+     */
     public Long save(Connection connection, Schedule schedule) throws SQLException {
         String sql = "insert into schedules (content, start_at, end_at, user_id, is_public, created_at, last_modified_at) values (?, ?, ?, ?, ?, ?, ?)";
 
@@ -76,23 +92,36 @@ public class ScheduleRepository {
             int createdRow = pstmt.executeUpdate();
 
             if(createdRow == 0)
-                throw new SQLException("일정 저장 실패: 행이 생성되지 않았습니다");
+                throw new SQLException("일정 저장 실패: 추가된 레코드가 없음");
 
             try(ResultSet generatedKeys = pstmt.getGeneratedKeys()){
                 if(generatedKeys.next()){
                     return generatedKeys.getLong(1);
                 }else
-                    throw new SQLException("일정 저장 실패: 기본키가 생성되지 않았습니다");
+                    throw new SQLException("일정 저장 실패: 기본키 생성 실패");
             }
 
         }catch (SQLException e){
-            log.error("일정 저장 중 오류 발생: " + e.getMessage());
-            throw new SQLException("일정 저장 중 오류 발생", e);
+            log.error(e.getMessage());
+            throw e;
         }
 
     }
 
-
+    /**
+     * 주어진 유저 ID와 필터 조건에 따라 일정 목록을 조회합니다
+     * 페이지네이션과 수정일 필터를 지원합니다
+     *
+     * @param connection 데이터베이스 커넥션
+     * @param userId 조회할 유저의 ID
+     * @param limit 페이지당 조회할 일정 수
+     * @param offset 조회 시작점
+     * @param modifiedAt 수정일 필터 (30m, 1h, 1d, 1w, 1m, 3m, 6m)
+     * @param startModifiedAt 수정일 범위의 시작 날짜
+     * @param endModifiedAt 수정일 범위의 종료 날짜
+     * @return 일정 목록
+     * @throws SQLException 일정 조회 중 오류가 발생한 경우
+     */
     public List<Schedule> findAllByUserIdWithPagination(Connection connection, Long userId, long limit, long offset, String modifiedAt, String startModifiedAt, String endModifiedAt) throws SQLException {
         StringBuilder sql = new StringBuilder("select * from schedules where user_id = ? ");
         List<Object> parameters = new ArrayList<>();
@@ -169,10 +198,18 @@ public class ScheduleRepository {
             }
         }catch (SQLException e){
             log.error("일정 조회 중 오류 발생: " + e.getMessage());
-            throw new SQLException("일정 조회 중 오류 발생");
+            throw e;
         }
     }
 
+    /**
+     * 주어진 일정 ID에 해당하는 일정을 수정합니다
+     *
+     * @param connection 데이터베이스 커넥션
+     * @param scheduleId 수정할 일정의 ID
+     * @param scheduleModifyReqDto 수정할 데이터를 담은 DTO
+     * @throws SQLException 일정 수정 중 오류가 발생한 경우
+     */
     public void update(Connection connection, Long scheduleId, ScheduleModifyReqDto scheduleModifyReqDto) throws SQLException {
         StringBuilder sql = new StringBuilder("update schedules set ");
         List<Object> parameters = new ArrayList<>();
@@ -210,11 +247,18 @@ public class ScheduleRepository {
 
         }catch(SQLException e){
             log.error("일정 수정 중 오류 발생: "+e.getMessage());
-            throw new SQLException("일정 수정 중 오류 발생");
+            throw e;
         }
     }
 
-    public void deleteById(Connection connection,  Long scheduleId) {
+    /**
+     * 일정 ID로 일정을 삭제합니다
+     *
+     * @param connection 데이터베이스 커넥션
+     * @param scheduleId 삭제할 일정의 ID
+     * @throws SQLException 일정 삭제 중 오류가 발생한 경우
+     */
+    public void deleteById(Connection connection,  Long scheduleId) throws SQLException {
         String sql = "delete from schedules where schedule_id = ?";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql)){
@@ -226,10 +270,24 @@ public class ScheduleRepository {
 
         }catch (SQLException e){
             log.error("일정 삭제 중 오류 발생: "+e.getMessage());
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "일정 삭제 중 오류 발생");
+            throw e;
         }
     }
 
+    /**
+     * 공개된 일정 목록을 필터링하여 조회합니다
+     * 수정일, 작성자명 등의 조건으로 일정 목록을 필터링하고 페이지네이션 기능을 제공합니다
+     *
+     * @param connection 데이터베이스 커넥션
+     * @param limit 페이지당 조회할 일정 수
+     * @param offset 조회 시작점
+     * @param modifiedAt 수정일 필터 (30m, 1h, 1d, 1w, 1m, 3m, 6m)
+     * @param authorName 작성자명 필터
+     * @param startModifiedAt 수정일 범위의 시작 날짜
+     * @param endModifiedAt 수정일 범위의 종료 날짜
+     * @return 필터링된 일정 목록
+     * @throws SQLException 일정 조회 중 오류가 발생한 경우
+     */
     public List<Schedule> findPublicSchedulesWithFilters(Connection connection, long limit, long offset, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt) throws SQLException {
         StringBuilder sql = new StringBuilder("select s.schedule_id, s.content, s.start_at, s.end_at, s.is_public, s.last_modified_at, s.created_at, " +
                 "u.user_id, u.name, u.email " +
@@ -320,10 +378,17 @@ public class ScheduleRepository {
             }
         }catch (SQLException e){
             log.error("전체 공개 일정 조회 중 오류 발생: " + e.getMessage());
-            throw new SQLException("전체 일정 조회 중 오류 발생");
+            throw e;
         }
     }
 
+    /**
+     * 주어진 유저의 모든 일정을 삭제합니다
+     *
+     * @param connection 데이터베이스 커넥션
+     * @param userPS 삭제할 유저 객체
+     * @throws SQLException 일정 삭제 중 오류가 발생한 경우
+     */
     public void deleteByUser(Connection connection, User userPS) throws SQLException {
         String sql = "delete from schedules where user_id = ?";
 
@@ -335,7 +400,7 @@ public class ScheduleRepository {
 
         }catch (SQLException e){
             log.error("유저 삭제 중 오류 발생: "+e.getMessage());
-            throw new SQLException("유저 삭제 중 오류 발생");
+            throw e;
         }
 
     }
