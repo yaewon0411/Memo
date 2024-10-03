@@ -3,6 +3,7 @@ import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.util.ConnectionUtil;
 import com.my.memo.util.CustomPasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -32,7 +33,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
-    private final DataSource dataSource;
+    private final ConnectionUtil connectionUtil;
+    //private final DataSource dataSource;
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     /**
@@ -68,8 +70,7 @@ public class UserService {
         Connection connection = null;
 
         try {
-            connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
+            connection = connectionUtil.getConnectionForTransaction();
 
             User userPS = userRepository.findById(connection, userId).orElseThrow(
                     () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
@@ -80,26 +81,19 @@ public class UserService {
 
             //유저 삭제
             userRepository.delete(connection, userPS);
-            connection.commit();
+
+            connectionUtil.commit(connection);
 
             return new UserDeleteRespDto(true, userId);
 
         } catch (SQLException e) {
-            try {
-                // 트랜잭션 롤백
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                log.error("롤백 중 오류 발생: " + rollbackEx.getMessage());
+            if(connection != null){
+                connectionUtil.rollback(connection);
             }
+            log.error("유저 삭제 중 오류 발생: {}", e.getMessage());
             throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "유저 삭제 중 오류 발생");
         } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    log.error("커넥션 닫기 중 오류 발생: " + closeEx.getMessage());
-                }
-            }
+            connectionUtil.close(connection);
         }
     }
 
@@ -119,11 +113,7 @@ public class UserService {
         if (userId == null)
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "로그인이 필요합니다");
 
-        Connection connection = null;
-        try{
-
-            connection = dataSource.getConnection();
-
+        try (Connection connection = connectionUtil.getConnectionForReadOnly()) {
             //유저 찾기
             User userPS = userRepository.findById(connection, userId).orElseThrow(
                     () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
@@ -131,16 +121,9 @@ public class UserService {
 
             return new UserRespDto(userPS);
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
+            log.error("유저 정보 조회 중 오류 발생: {}", e.getMessage());
             throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "유저 정보 조회 중 오류 발생");
-        } finally {
-            if(connection != null){
-                try{
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    log.error("커넥션 닫기 중 오류 발생: " + closeEx.getMessage());
-                }
-            }
         }
     }
 
@@ -167,9 +150,7 @@ public class UserService {
         Connection connection = null;
 
         try{
-
-            connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
+            connection = connectionUtil.getConnectionForTransaction();
 
             //유저 찾기
             User userPS = userRepository.findById(connection, userId).orElseThrow(
@@ -188,26 +169,17 @@ public class UserService {
 
             //수정
             userPS.modify(userModifyReqDto);
-            connection.commit();
+
+            connectionUtil.commit(connection);
 
             return new UserModifyRespDto(userPS);
 
         }catch (SQLException e){
-            try {
-                // 트랜잭션 롤백
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                log.error("롤백 중 오류 발생: " + rollbackEx.getMessage());
-            }
+            connectionUtil.rollback(connection);
+            log.error("유저 정보 수정 중 오류 발생: {}", e.getMessage());
             throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "유저 정보 수정 중 오류 발생");
         }finally {
-            if(connection != null){
-                try{
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    log.error("커넥션 닫기 중 오류 발생: " + closeEx.getMessage());
-                }
-            }
+            connectionUtil.close(connection);
         }
     }
 
@@ -225,8 +197,7 @@ public class UserService {
 
         Connection connection = null;
         try {
-            connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
+            connection = connectionUtil.getConnectionForTransaction();
 
             //이메일 중복 검사
             if(userRepository.existsByEmail(connection, joinReqDto.getEmail())) {
@@ -237,31 +208,20 @@ public class UserService {
             //저장
             User user = joinReqDto.toEntity();
 
-
             Long userId = userRepository.save(connection, user);
-            connection.commit();
 
-            log.info("회원가입 완료: id = {}", userId);
+            connectionUtil.commit(connection);
+
+            log.info("회원가입 완료: 유저 ID {}", userId);
 
             //반환
             return new JoinRespDto(userId, user);
         }catch (SQLException e){
-            try {
-                // 트랜잭션 롤백
-                connection.rollback();
-                log.info("트랜잭션 롤백 완료");
-            } catch (SQLException rollbackEx) {
-                log.error("롤백 중 오류 발생: " + rollbackEx.getMessage());
-            }
+            connectionUtil.rollback(connection);
+            log.error("유저 정보 저장 중 오류 발생: {}", e.getMessage());
             throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "유저 저장 중 오류 발생");
         }finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    log.error("커넥션 닫기 중 오류 발생: " + closeEx.getMessage());
-                }
-            }
+            connectionUtil.close(connection);
         }
     }
 
@@ -285,11 +245,8 @@ public class UserService {
 
         session = request.getSession(true);
 
-        Connection connection = null;
-
-        try {
-            connection = dataSource.getConnection();
-            //유저 확인
+        try (Connection connection = connectionUtil.getConnectionForReadOnly()) {
+            // 유저 확인
             User userPS = userRepository.findByEmail(connection, loginReqDto.getEmail()).orElseThrow(
                     () -> {
                         log.warn("로그인 실패: 존재하지 않는 이메일");
@@ -297,28 +254,22 @@ public class UserService {
                     }
             );
 
-            //비밀번호 검증
+            // 비밀번호 검증
             if (!CustomPasswordUtil.matches(loginReqDto.getPassword(), userPS.getPassword())) {
                 log.warn("로그인 실패: 비밀번호 불일치");
                 throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "비밀번호가 일치하지 않습니다");
             }
 
-            //세션에 유저 담기
+            // 세션에 유저 담기
             session.setAttribute("userId", userPS.getId());
-            log.info("로그인 성공: 유저 ID {}", session.getAttribute("userId"));
+            log.info("로그인 성공: 유저 ID {}", userPS.getId());
 
-            //아이디 반환
+            // 아이디 반환
             return new LoginRespDto(userPS);
-        }catch (SQLException e) {
-            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "이메일로 유저 조회 중 오류 발생");
-        }finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException closeEx) {
-                    log.error("커넥션 닫기 중 오류 발생: " + closeEx.getMessage());
-                }
-            }
+
+        } catch (SQLException e) {
+            log.error("로그인 중 오류 발생: {}", e.getMessage());
+            throw new CustomApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "로그인 중 오류 발생");
         }
     }
 
