@@ -72,7 +72,6 @@ public class ScheduleRepository {
             pstmt.setBoolean(5, schedule.isPublic());
             pstmt.setTimestamp(6, Timestamp.valueOf(schedule.getCreatedAt()));
             pstmt.setTimestamp(7, Timestamp.valueOf(schedule.getLastModifiedAt()));
-
             int createdRow = pstmt.executeUpdate();
 
             if(createdRow == 0)

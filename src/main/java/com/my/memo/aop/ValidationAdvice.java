@@ -30,7 +30,6 @@ public class ValidationAdvice {
                 if(bindingResult.hasErrors()){
                     Map<String, String> errorMap = new HashMap<>();
                     for (FieldError fieldError : bindingResult.getFieldErrors()) {
-                        System.out.println("fieldError = " + fieldError.getField());
                         errorMap.put(fieldError.getField(), fieldError.getDefaultMessage());
                     }
                     throw new CustomValidationException("유효성 검사 실패", errorMap);
