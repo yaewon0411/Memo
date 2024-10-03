@@ -33,6 +33,7 @@ public class ScheduleController {
     @PatchMapping("/s/schedules/{scheduleId}")
     public ResponseEntity<?>updateSchedule(@PathVariable(name = "scheduleId")Long scheduleId,
                                            @RequestBody @Validated ScheduleModifyReqDto scheduleModifyReqDto,
+                                           BindingResult bindingResult,
                                            HttpSession session){
         return new ResponseEntity<>(ApiUtil.success(scheduleService.updateSchedule(scheduleModifyReqDto, scheduleId, session)), HttpStatus.OK);
     }

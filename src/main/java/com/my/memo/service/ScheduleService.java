@@ -163,7 +163,6 @@ public class ScheduleService {
 
         Connection connection = null;
 
-        scheduleModifyReqDto.validate();
 
         try {
             connection = dataSource.getConnection();

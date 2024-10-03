@@ -39,24 +39,6 @@ public class ReqDto {
         public LocalDateTime getLocalDateTimeStartAt(){
             return CustomUtil.scheduleTimeToLocalDateTime(this.startAt);
         }
-
-        public void validate() {
-            // content 필드 검증
-            if (content != null && content.trim().isEmpty()) {
-                throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "할 일을 입력해야 합니다");
-            }
-
-            // startAt 필드 검증
-            if (startAt != null && !startAt.matches("^(19|20)\\d\\d-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])\\s([01]\\d|2[0-3]):([0-5]\\d)$")) {
-                throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "시작 시간은 yyyy-MM-dd HH:mm 형식이어야 합니다");
-            }
-
-            // endAt 필드 검증
-            if (endAt != null && !endAt.matches("^(19|20)\\d\\d-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])\\s([01]\\d|2[0-3]):([0-5]\\d)$")) {
-                throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "종료 시간은 yyyy-MM-dd HH:mm 형식이어야 합니다`");
-            }
-
-        }
     }
     @NoArgsConstructor
     @Getter
