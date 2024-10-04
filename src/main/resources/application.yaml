@@ -2,13 +2,3 @@ spring:
   profiles:
     active: dev
 
-server:
-  servlet:
-    session:
-      cookie:
-        secure: false
-        http-only: true
-      timeout: 1d
-    encoding:
-      charset: UTF-8
-      force: true
