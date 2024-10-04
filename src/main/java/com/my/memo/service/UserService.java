@@ -12,13 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
-
 import static com.my.memo.dto.user.ReqDto.*;
 import static com.my.memo.dto.user.RespDto.*;
 /**
@@ -34,7 +30,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
     private final ConnectionUtil connectionUtil;
-    //private final DataSource dataSource;
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     /**
