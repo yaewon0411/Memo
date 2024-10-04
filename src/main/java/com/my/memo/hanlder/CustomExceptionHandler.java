@@ -33,12 +33,12 @@ public class CustomExceptionHandler {
      * NoResourceFoundException 발생 시 404 Not Found 응답을 반환
      *
      *
-     * @param ex 발생한 NoResourceFoundException 예외 객체
+     * @param e 발생한 NoResourceFoundException 예외 객체
      * @return 404 Not Found 응답을 포함한 ResponseEntity
      */
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<?> handleNoResourceFoundException(NoResourceFoundException ex) {
+    public ResponseEntity<?> handleNoResourceFoundException(NoResourceFoundException e) {
         return new ResponseEntity<>(ApiUtil.error(HttpStatus.NOT_FOUND.value(), "요청된 URI를 찾을 수 없습니다"), HttpStatus.NOT_FOUND);
     }
 
