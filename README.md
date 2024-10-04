@@ -24,6 +24,21 @@
 - **``공개 일정``**: 공개된 일정은 모든 사용자가 접근할 수 있으며, 일정 공유가 간편하게 이루어집니다.
 ### API 엔드포인트
 [API 명세서 바로가기](https://documenter.getpostman.com/view/27240528/2sAXxLBZon)
+
+### 테스트 
+1. 클론 후 Active profiles가 test로 설정되었는지 확인 합니다
+2. 더미 유저로 로그인 시 다음 값을 사용합니다
+  - **``email``** : root1234@naver.com
+  - **``password``** : root1234
+```text
+{
+    "email": "root1234@naver.com",
+    "password": "root1234"
+}
+```
+
+
+
 #### 사용자 관련 엔드포인트
 - ``POST`` /api/join - 신규 사용자 회원가입
 - ``POST`` /api/login - 로그인 후 세션 생성
