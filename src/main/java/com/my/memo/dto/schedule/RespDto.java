@@ -27,9 +27,11 @@ public class RespDto {
             this.scheduleRespDtoList = scheduleList.stream()
                     .map(ScheduleRespDto::new)
                     .collect(Collectors.toList());
+            this.size = this.scheduleRespDtoList.size();
         }
         private List<ScheduleRespDto> scheduleRespDtoList;
         private boolean hasNextPage;
+        private int size;
 
 
         @NoArgsConstructor
@@ -91,9 +93,11 @@ public class RespDto {
             this.scheduleRespDtoList = scheduleList.stream()
                     .map(ScheduleRespDto::new)
                     .collect(Collectors.toList());
+            this.size = this.scheduleRespDtoList.size();
         }
         private List<ScheduleRespDto> scheduleRespDtoList;
         private boolean hasNextPage;
+        private int size;
 
         @NoArgsConstructor
         @Getter
