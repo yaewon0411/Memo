@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,18 +28,20 @@ public class CustomExceptionHandler {
 
     private final static Logger log = LoggerFactory.getLogger(CustomExceptionHandler.class);
 
+
     /**
-     * NoHandlerFoundException 발생 시 404 Not Found 응답을 반환
+     * NoResourceFoundException 발생 시 404 Not Found 응답을 반환
      *
      *
-     * @param ex 발생한 NoHandlerFoundException 예외 객체
+     * @param ex 발생한 NoResourceFoundException 예외 객체
      * @return 404 Not Found 응답을 포함한 ResponseEntity
      */
-    @ExceptionHandler(NoHandlerFoundException.class)
+    @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<?> handleNoResourceFoundException(NoHandlerFoundException ex) {
+    public ResponseEntity<?> handleNoResourceFoundException(NoResourceFoundException ex) {
         return new ResponseEntity<>(ApiUtil.error(HttpStatus.NOT_FOUND.value(), "요청된 URI를 찾을 수 없습니다"), HttpStatus.NOT_FOUND);
     }
+
 
     /**
      * CustomApiException 발생 시 해당 예외의 HTTP 상태 코드와 메시지를 반환
