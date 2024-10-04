@@ -98,7 +98,7 @@ public class UserRepository {
      * @throws SQLException 유저 조회 중 오류가 발생한 경우
      */
     public Optional<User> findByEmail(Connection connection, String email) throws SQLException {
-        String sql = "select * from Users where email = ?";
+        String sql = "select * from users where email = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
@@ -130,7 +130,7 @@ public class UserRepository {
      * @throws SQLException 유저 조회 중 오류가 발생한 경우
      */
     public Optional<User> findById(Connection connection, Long id) throws SQLException {
-        String sql = "select * from Users where user_id = ?";
+        String sql = "select * from users where user_id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
