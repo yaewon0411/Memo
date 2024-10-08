@@ -71,8 +71,8 @@ public class RespDto {
     @NoArgsConstructor
     @Getter
     public static class JoinRespDto{
-        public JoinRespDto(Long id, User user){
-            this.userId = id;
+        public JoinRespDto(User user){
+            this.userId = user.getId();
             this.name = user.getName();
         }
         private Long userId;

@@ -1,5 +1,6 @@
 package com.my.memo.dto.schedule;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.util.CustomUtil;
 import lombok.Getter;
@@ -11,17 +12,21 @@ import java.util.stream.Collectors;
 
 public class RespDto {
     /*
-    * 스케줄 id
-    * 작성자명
-    * 생성일
-    * 수정일
-    * content
-    *
-            * 까지만 내보내기
-    * */
+     * 스케줄 id
+     * 작성자명
+     * 생성일
+     * 수정일
+     * content
+     *
+     * 까지만 내보내기
+     * */
     @NoArgsConstructor
     @Getter
-    public static class ScheduleListRespDto{
+    public static class ScheduleListRespDto {
+        private List<ScheduleRespDto> scheduleRespDtoList;
+        private boolean hasNextPage;
+        private int size;
+
         public ScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
@@ -29,14 +34,18 @@ public class RespDto {
                     .collect(Collectors.toList());
             this.size = this.scheduleRespDtoList.size();
         }
-        private List<ScheduleRespDto> scheduleRespDtoList;
-        private boolean hasNextPage;
-        private int size;
-
 
         @NoArgsConstructor
         @Getter
-        public static class ScheduleRespDto{
+        public static class ScheduleRespDto {
+            private Long id;
+            private String name;
+            private String content;
+            private Boolean isPublic;
+            private String createdAt;
+            private String modifiedAt;
+            private int commentCnt;
+
             public ScheduleRespDto(Schedule schedule) {
                 this.content = schedule.getContent();
                 this.isPublic = schedule.isPublic();
@@ -44,33 +53,27 @@ public class RespDto {
                 this.name = schedule.getUser().getName();
                 this.createdAt = CustomUtil.localDateTimeToScheduleTime(schedule.getCreatedAt());
                 this.modifiedAt = CustomUtil.localDateTimeToScheduleTime(schedule.getLastModifiedAt());
+                this.commentCnt = schedule.getCommentList().size();
             }
-
-            private Long id;
-            private String name;
-            private String content;
-            private Boolean isPublic;
-            private String createdAt;
-            private String modifiedAt;
         }
     }
 
 
     @NoArgsConstructor
     @Getter
-    public static class ScheduleDeleteRespDto{
+    public static class ScheduleDeleteRespDto {
+        private Long id;
+        private Boolean deleted;
+
         public ScheduleDeleteRespDto(Long id, Boolean deleted) {
             this.id = id;
             this.deleted = deleted;
         }
-
-        private Long id;
-        private Boolean deleted;
     }
 
     @NoArgsConstructor
     @Getter
-    public static class ScheduleModifyRespDto{
+    public static class ScheduleModifyRespDto {
         private String content;
         private String startAt;
         private String endAt;
@@ -88,6 +91,10 @@ public class RespDto {
     @Getter
     public static class UserScheduleListRespDto {
 
+        private List<ScheduleRespDto> scheduleRespDtoList;
+        private boolean hasNextPage;
+        private int size;
+
         public UserScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
@@ -95,26 +102,25 @@ public class RespDto {
                     .collect(Collectors.toList());
             this.size = this.scheduleRespDtoList.size();
         }
-        private List<ScheduleRespDto> scheduleRespDtoList;
-        private boolean hasNextPage;
-        private int size;
 
         @NoArgsConstructor
         @Getter
-        public static class ScheduleRespDto{
+        public static class ScheduleRespDto {
+            private Long id;
+            private String content;
+            private Boolean isPublic;
+            private String createdAt;
+            private String modifiedAt;
+            private int commentCnt;
+
             public ScheduleRespDto(Schedule schedule) {
                 this.content = schedule.getContent();
                 this.isPublic = schedule.isPublic();
                 this.id = schedule.getId();
                 this.createdAt = CustomUtil.localDateTimeToScheduleTime(schedule.getCreatedAt());
                 this.modifiedAt = CustomUtil.localDateTimeToScheduleTime(schedule.getLastModifiedAt());
+                this.commentCnt = schedule.getCommentList().size();
             }
-
-            private Long id;
-            private String content;
-            private Boolean isPublic;
-            private String createdAt;
-            private String modifiedAt;
         }
 
     }
@@ -122,7 +128,16 @@ public class RespDto {
 
     @NoArgsConstructor
     @Getter
-    public static class ScheduleRespDto{
+    public static class ScheduleRespDto {
+        private Long id;
+        private String content;
+        private String startAt;
+        private String endAt;
+        private Boolean isPublic;
+        private String createdAt;
+        private String modifiedAt;
+        private String name;
+
         public ScheduleRespDto(Schedule schedule) {
             this.content = schedule.getContent();
             this.startAt = CustomUtil.localDateTimeToScheduleTime(schedule.getStartAt());
@@ -133,36 +148,31 @@ public class RespDto {
             this.modifiedAt = CustomUtil.localDateTimeToScheduleTime(schedule.getLastModifiedAt());
             this.name = schedule.getUser().getName();
         }
+    }
+
+    @NoArgsConstructor
+    @Getter
+    public static class ScheduleCreateRespDto {
 
         private Long id;
         private String content;
-        private String startAt;
-        private String endAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime startAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime endAt;
+        private Long userId;
         private Boolean isPublic;
-        private String createdAt;
-        private String modifiedAt;
-        private String name;
-    }
-    @NoArgsConstructor
-    @Getter
-    public static class ScheduleCreateRespDto{
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime createdAt;
 
-        public ScheduleCreateRespDto(Schedule schedule, Long scheduleId) {
-            this.id = scheduleId;
+        public ScheduleCreateRespDto(Schedule schedule) {
+            this.id = schedule.getId();
             this.content = schedule.getContent();
             this.startAt = schedule.getStartAt();
             this.endAt = schedule.getEndAt();
             this.userId = schedule.getUser().getId();
             this.isPublic = schedule.isPublic();
-            this.createdAt = CustomUtil.localDateTimeToScheduleTime(schedule.getCreatedAt());
+            this.createdAt = schedule.getCreatedAt();
         }
-
-        private Long id;
-        private String content;
-        private LocalDateTime startAt;
-        private LocalDateTime endAt;
-        private Long userId;
-        private Boolean isPublic;
-        private String createdAt;
     }
 }
