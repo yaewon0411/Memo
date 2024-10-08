@@ -9,73 +9,75 @@ public class RespDto {
 
     @NoArgsConstructor
     @Getter
-    public static class UserLogoutRespDto{
+    public static class UserLogoutRespDto {
+        private Boolean logout;
+        private Long userId;
+
         public UserLogoutRespDto(Boolean logout, Long id) {
             this.logout = logout;
             this.userId = id;
         }
-        private Boolean logout;
-        private Long userId;
     }
 
     @NoArgsConstructor
     @Getter
-    public static class UserDeleteRespDto{
+    public static class UserDeleteRespDto {
+        private Boolean deleted;
+        private Long userId;
+
         public UserDeleteRespDto(Boolean deleted, Long userId) {
             this.deleted = deleted;
             this.userId = userId;
         }
-
-        private Boolean deleted;
-        private Long userId;
     }
 
     @NoArgsConstructor
     @Getter
     public static class UserModifyRespDto {
+        private String name;
+        private String email;
+
         public UserModifyRespDto(User user) {
             this.name = user.getName();
             this.email = user.getEmail();
         }
-
-        private String name;
-        private String email;
     }
 
     @NoArgsConstructor
     @Getter
-    public static class UserRespDto{
+    public static class UserRespDto {
+        private String name;
+        private String email;
+        private String joinDay; //가입일
+
         public UserRespDto(User user) {
             this.name = user.getName();
             this.email = user.getEmail();
             this.joinDay = CustomUtil.localDateTimeToScheduleTime(user.getCreatedAt());
         }
-
-        private String name;
-        private String email;
-        private String joinDay; //가입일
     }
 
     @Getter
     @NoArgsConstructor
-    public static class LoginRespDto{
+    public static class LoginRespDto {
+        private Long userId;
+        private String name;
+
         public LoginRespDto(User user) {
             this.userId = user.getId();
             this.name = user.getName();
         }
-
-        private Long userId;
-        private String name;
     }
 
     @NoArgsConstructor
     @Getter
-    public static class JoinRespDto{
-        public JoinRespDto(User user){
+    public static class JoinRespDto {
+        private Long userId;
+        private String name;
+
+        public JoinRespDto(User user) {
             this.userId = user.getId();
             this.name = user.getName();
         }
-        private Long userId;
-        private String name;
     }
 }

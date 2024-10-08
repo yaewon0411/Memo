@@ -1,7 +1,7 @@
 package com.my.memo.controller;
 
 import com.my.memo.config.jwt.RequireAuth;
-import com.my.memo.dto.comment.ReqDto;
+import com.my.memo.domain.user.Role;
 import com.my.memo.service.CommentService;
 import com.my.memo.service.ScheduleService;
 import com.my.memo.service.ScheduleUserService;
@@ -17,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import static com.my.memo.dto.comment.ReqDto.CommentCreateReqDto;
 import static com.my.memo.dto.schedule.ReqDto.ScheduleCreateReqDto;
 import static com.my.memo.dto.schedule.ReqDto.ScheduleModifyReqDto;
 
@@ -34,7 +35,7 @@ public class ScheduleController {
     @RequireAuth
     @PostMapping("/s/schedules/{scheduleId}/comments")
     public ResponseEntity<?> createComment(@PathVariable(name = "scheduleId") Long scheduleId,
-                                           @RequestBody ReqDto.CommentCreateReqDto commentCreateReqDto, BindingResult bindingResult,
+                                           @RequestBody @Valid CommentCreateReqDto commentCreateReqDto, BindingResult bindingResult,
                                            HttpServletRequest request) {
         return new ResponseEntity<>(ApiUtil.success(commentService.createComment(scheduleId, commentCreateReqDto, request)), HttpStatus.CREATED);
     }
@@ -51,14 +52,14 @@ public class ScheduleController {
     }
 
 
-    @RequireAuth(role = "ADMIN")
+    @RequireAuth(role = Role.ADMIN)
     @DeleteMapping("/s/schedules/{scheduleId}")
     public ResponseEntity<?> deleteSchedule(@PathVariable(name = "scheduleId") Long scheduleId, HttpServletRequest request) {
         return new ResponseEntity<>(ApiUtil.success(scheduleService.deleteSchedule(scheduleId, request)), HttpStatus.OK);
     }
 
 
-    @RequireAuth(role = "ADMIN")
+    @RequireAuth(role = Role.ADMIN)
     @PatchMapping("/s/schedules/{scheduleId}")
     public ResponseEntity<?> updateSchedule(@PathVariable(name = "scheduleId") Long scheduleId,
                                             @RequestBody @Validated ScheduleModifyReqDto scheduleModifyReqDto,

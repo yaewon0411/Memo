@@ -1,5 +1,7 @@
 package com.my.memo.config.jwt;
 
+import com.my.memo.domain.user.Role;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -8,7 +10,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequireAuth {
-    String role() default "USER";
+    Role role() default Role.USER;
 }
 
 /*

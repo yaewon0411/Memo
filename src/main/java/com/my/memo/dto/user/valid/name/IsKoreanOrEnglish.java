@@ -10,13 +10,9 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = NameValidator.class) // 유효성 검증을 처리하는 클래스를 지정
+@Constraint(validatedBy = NameValidator.class)
 public @interface IsKoreanOrEnglish {
     String message() default "이름은 영문 또는 한글만 입력 가능합니다";
-
-    int min() default 2;
-
-    int max() default 10;
 
     Class<?>[] groups() default {};
 

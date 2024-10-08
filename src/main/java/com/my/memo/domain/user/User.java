@@ -57,6 +57,9 @@ public class User extends BaseEntity {
             this.email = userModifyReqDto.getEmail();
         if (userModifyReqDto.getName() != null)
             this.name = userModifyReqDto.getName();
+        if (userModifyReqDto.getPassword() != null)
+            this.password = userModifyReqDto.getEncodedPassword();
+
     }
 
 }

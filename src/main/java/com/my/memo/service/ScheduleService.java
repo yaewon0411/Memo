@@ -52,7 +52,7 @@ public class ScheduleService {
     public ScheduleListRespDto findPublicSchedulesWithFilters(long page, long limit, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt) {
 
         List<Schedule> scheduleList = scheduleRepository.findPublicSchedulesWithFilters(limit, page, modifiedAt, authorName, startModifiedAt, endModifiedAt);
-        scheduleRepository.getCommentsBySchedules(scheduleList);
+        scheduleRepository.getCommentsBySchedules(scheduleList); //코멘트 초기화
 
         boolean hasNextPage = false;
 
@@ -66,10 +66,9 @@ public class ScheduleService {
 
 
     //TODO 고아객체 삭제되는지 테스트
-    //TODO 나중에 코멘트랑 ScheduleUser도 삭제되도록 추가해야 함!!!
     @Transactional
     public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, HttpServletRequest request) {
-        //유저 꺼내기
+
         Long userId = (Long) request.getAttribute("userId");
         log.info("유저 ID: {}", userId);
 
@@ -84,6 +83,7 @@ public class ScheduleService {
 
         // 일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
 
+        //TODO 엥 고아객체 됐는데 제거 안됨 뭐임
         userPS.getScheduleList().remove(schedulePS);
 
         return new ScheduleDeleteRespDto(scheduleId, true);
@@ -123,7 +123,7 @@ public class ScheduleService {
         );
 
         List<Schedule> scheduleList = scheduleRepository.findAllByUserIdWithPagination(userPS, limit, page, modifiedAt, startModifiedAt, endModifiedAt);
-        scheduleRepository.getCommentsBySchedules(scheduleList);
+        scheduleRepository.getCommentsBySchedules(scheduleList); //코멘트 초기화
 
         boolean hasNextPage = false;
 

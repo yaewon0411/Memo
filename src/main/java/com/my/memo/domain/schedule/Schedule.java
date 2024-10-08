@@ -37,7 +37,7 @@ public class Schedule extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "schedule", cascade = REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "schedule", cascade = REMOVE)
     private List<Comment> commentList = new ArrayList<>();
 
 

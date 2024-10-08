@@ -4,6 +4,7 @@ import com.my.memo.config.jwt.JwtProvider;
 import com.my.memo.config.jwt.JwtVo;
 import com.my.memo.config.jwt.RequireAuth;
 import com.my.memo.domain.user.Role;
+import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomJwtException;
 import com.my.memo.util.CustomUtil;
 import com.my.memo.util.api.ApiResult;
@@ -26,6 +27,7 @@ import java.io.IOException;
 public class AuthInterceptor implements HandlerInterceptor {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -42,16 +44,19 @@ public class AuthInterceptor implements HandlerInterceptor {
                     String jwt = jwtProvider.substringToken(token);
                     try {
                         if (jwtProvider.validateToken(jwt)) { //검증 성공 시
-                            String userRole = jwtProvider.getUserRole(jwt);
+                            Role userRole = Role.valueOf(jwtProvider.getUserRole(jwt));
+                            Long userId = jwtProvider.getUserId(jwt);
 
-                            if (requireAuth.role().equals(Role.ADMIN.getAuthority())) {
+                            if (requireAuth.role().equals(Role.ADMIN)) {
+                                log.info("관리자 전용 api에 접속: 유저 ID {}, 역할: {}", userId, userRole.toString());
+
                                 if (!requireAuth.role().equals(userRole)) {
                                     setErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "권한이 없습니다");
                                     return false;
                                 }
                             }
-                            request.setAttribute("userId", jwtProvider.getUserId(jwt));
-                            log.info("요청에 유저 정보 설정: 유저 ID {}", jwtProvider.getUserId(jwt));
+                            request.setAttribute("userId", userId);
+                            log.info("요청에 유저 정보 설정: 유저 ID {}", userId);
                         }
                     } catch (CustomJwtException e) {
                         setErrorResponse(response, e.getStatus(), e.getMsg());
