@@ -27,6 +27,7 @@ public class Schedule extends BaseEntity {
     @Column(name = "schedule_id")
     private Long id;
 
+    @Column(length = 512)
     private String content;
     private LocalDateTime startAt;
     private LocalDateTime endAt;
@@ -45,7 +46,8 @@ public class Schedule extends BaseEntity {
     private List<ScheduleUser> assignedUserList = new ArrayList<>();
 
     @Builder
-    public Schedule(String content, LocalDateTime startAt, LocalDateTime endAt, boolean isPublic, User user) {
+    public Schedule(Long id, String content, LocalDateTime startAt, LocalDateTime endAt, boolean isPublic, User user) {
+        this.id = id;
         this.content = content;
         this.startAt = startAt;
         this.endAt = endAt;
