@@ -2,7 +2,6 @@ package com.my.memo.dto.schedule;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.my.memo.domain.schedule.Schedule;
-import com.my.memo.util.CustomUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -42,8 +41,10 @@ public class RespDto {
             private String name;
             private String content;
             private Boolean isPublic;
-            private String createdAt;
-            private String modifiedAt;
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+            private LocalDateTime createdAt;
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+            private LocalDateTime modifiedAt;
             private int commentCnt;
 
             public ScheduleRespDto(Schedule schedule) {
@@ -51,8 +52,8 @@ public class RespDto {
                 this.isPublic = schedule.isPublic();
                 this.id = schedule.getId();
                 this.name = schedule.getUser().getName();
-                this.createdAt = CustomUtil.localDateTimeToScheduleTime(schedule.getCreatedAt());
-                this.modifiedAt = CustomUtil.localDateTimeToScheduleTime(schedule.getLastModifiedAt());
+                this.createdAt = schedule.getCreatedAt();
+                this.modifiedAt = schedule.getLastModifiedAt();
                 this.commentCnt = schedule.getCommentList().size();
             }
         }
@@ -75,14 +76,16 @@ public class RespDto {
     @Getter
     public static class ScheduleModifyRespDto {
         private String content;
-        private String startAt;
-        private String endAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime startAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime endAt;
         private Boolean isPublic;
 
         public ScheduleModifyRespDto(Schedule schedule) {
             this.content = schedule.getContent();
-            this.startAt = CustomUtil.localDateTimeToScheduleTime(schedule.getStartAt());
-            this.endAt = CustomUtil.localDateTimeToScheduleTime(schedule.getEndAt());
+            this.startAt = schedule.getStartAt();
+            this.endAt = schedule.getEndAt();
             this.isPublic = schedule.isPublic();
         }
     }
@@ -109,16 +112,18 @@ public class RespDto {
             private Long id;
             private String content;
             private Boolean isPublic;
-            private String createdAt;
-            private String modifiedAt;
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+            private LocalDateTime createdAt;
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+            private LocalDateTime modifiedAt;
             private int commentCnt;
 
             public ScheduleRespDto(Schedule schedule) {
                 this.content = schedule.getContent();
                 this.isPublic = schedule.isPublic();
                 this.id = schedule.getId();
-                this.createdAt = CustomUtil.localDateTimeToScheduleTime(schedule.getCreatedAt());
-                this.modifiedAt = CustomUtil.localDateTimeToScheduleTime(schedule.getLastModifiedAt());
+                this.createdAt = schedule.getCreatedAt();
+                this.modifiedAt = schedule.getLastModifiedAt();
                 this.commentCnt = schedule.getCommentList().size();
             }
         }
@@ -131,21 +136,25 @@ public class RespDto {
     public static class ScheduleRespDto {
         private Long id;
         private String content;
-        private String startAt;
-        private String endAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime startAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime endAt;
         private Boolean isPublic;
-        private String createdAt;
-        private String modifiedAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime createdAt;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        private LocalDateTime modifiedAt;
         private String name;
 
         public ScheduleRespDto(Schedule schedule) {
             this.content = schedule.getContent();
-            this.startAt = CustomUtil.localDateTimeToScheduleTime(schedule.getStartAt());
-            this.endAt = CustomUtil.localDateTimeToScheduleTime(schedule.getEndAt());
+            this.startAt = schedule.getStartAt();
+            this.endAt = schedule.getEndAt();
             this.isPublic = schedule.isPublic();
             this.id = schedule.getId();
-            this.createdAt = CustomUtil.localDateTimeToScheduleTime(schedule.getCreatedAt());
-            this.modifiedAt = CustomUtil.localDateTimeToScheduleTime(schedule.getLastModifiedAt());
+            this.createdAt = schedule.getCreatedAt();
+            this.modifiedAt = schedule.getLastModifiedAt();
             this.name = schedule.getUser().getName();
         }
     }

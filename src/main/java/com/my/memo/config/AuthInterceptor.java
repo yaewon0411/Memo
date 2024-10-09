@@ -8,7 +8,6 @@ import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomJwtException;
 import com.my.memo.util.CustomUtil;
 import com.my.memo.util.api.ApiResult;
-import com.my.memo.util.api.ApiUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -82,7 +81,7 @@ public class AuthInterceptor implements HandlerInterceptor {
      * @throws IOException 응답 작성 중 IO 예외가 발생 가능
      */
     private void setErrorResponse(HttpServletResponse response, int status, String msg) throws IOException {
-        ApiResult<Object> unAuthResponse = ApiUtil.error(status, msg);
+        ApiResult<Object> unAuthResponse = ApiResult.error(status, msg);
         response.setStatus(status);
         response.setContentType("application/json; charset=UTF-8");
         response.getWriter().write(CustomUtil.convertToJson(unAuthResponse));

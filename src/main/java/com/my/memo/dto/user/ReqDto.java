@@ -77,5 +77,6 @@ public class ReqDto {
                     .password(CustomPasswordUtil.encode(this.password))
                     .build();
         }
+
     }
 }

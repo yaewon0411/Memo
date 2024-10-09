@@ -15,7 +15,7 @@ public class ReqDto {
     @Getter
     public static class ScheduleModifyReqDto {
 
-        @Size(min = 1, max = 512)
+        @Size(min = 1, max = 512, message = "1자에서 512자 사이로 입력해야 합니다")
         private String content;
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")

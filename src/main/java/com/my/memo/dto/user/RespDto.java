@@ -1,9 +1,11 @@
 package com.my.memo.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.my.memo.domain.user.User;
-import com.my.memo.util.CustomUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 public class RespDto {
 
@@ -48,12 +50,13 @@ public class RespDto {
     public static class UserRespDto {
         private String name;
         private String email;
-        private String joinDay; //가입일
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        private LocalDateTime joinDay; //가입일
 
         public UserRespDto(User user) {
             this.name = user.getName();
             this.email = user.getEmail();
-            this.joinDay = CustomUtil.localDateTimeToScheduleTime(user.getCreatedAt());
+            this.joinDay = user.getCreatedAt();
         }
     }
 
