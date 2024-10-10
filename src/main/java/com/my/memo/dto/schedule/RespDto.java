@@ -2,6 +2,7 @@ package com.my.memo.dto.schedule;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.my.memo.domain.schedule.Schedule;
+import com.my.memo.domain.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -97,13 +98,15 @@ public class RespDto {
         private List<ScheduleRespDto> scheduleRespDtoList;
         private boolean hasNextPage;
         private int size;
+        private String name;
 
-        public UserScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage) {
+        public UserScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage, User user) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
                     .map(ScheduleRespDto::new)
                     .collect(Collectors.toList());
             this.size = this.scheduleRespDtoList.size();
+            this.name = user.getName();
         }
 
         @NoArgsConstructor
