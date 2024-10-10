@@ -31,8 +31,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        if (handler instanceof HandlerMethod) {
-            HandlerMethod handlerMethod = (HandlerMethod) handler;
+        if (handler instanceof HandlerMethod handlerMethod) {
             RequireAuth requireAuth = handlerMethod.getMethodAnnotation(RequireAuth.class);
 
             if (requireAuth != null) {
@@ -40,8 +39,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
                 //헤더가 있다면
                 if (token != null && !token.isEmpty()) {
-                    String jwt = jwtProvider.substringToken(token);
                     try {
+                        String jwt = jwtProvider.substringToken(token);
+                        
                         if (jwtProvider.validateToken(jwt)) { //검증 성공 시
                             Role userRole = Role.valueOf(jwtProvider.getUserRole(jwt));
                             Long userId = jwtProvider.getUserId(jwt);
@@ -55,7 +55,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                                 }
                             }
                             request.setAttribute("userId", userId);
-                            log.info("요청에 유저 정보 설정: 유저 ID {}", userId);
+                            log.info("유저 정보 설정: 유저 ID {}", userId);
                         }
                     } catch (CustomJwtException e) {
                         setErrorResponse(response, e.getStatus(), e.getMsg());
