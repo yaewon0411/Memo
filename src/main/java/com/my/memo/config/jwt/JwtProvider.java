@@ -36,6 +36,7 @@ public class JwtProvider {
                 .compact();
     }
 
+
     public String getUserRole(String token) {
         Claims claims = getClaims(token);
         return claims.get("role", String.class);
@@ -67,7 +68,7 @@ public class JwtProvider {
             return tokenValue.substring(7);
         }
         log.error("토큰을 찾을 수 없음");
-        throw new NullPointerException("토큰을 찾을 수 없음");
+        throw new CustomJwtException(HttpStatus.NOT_FOUND.value(), "토큰을 찾을 수 없습니다");
     }
 
     public void addJwtToHeader(String token, HttpServletResponse res) {
