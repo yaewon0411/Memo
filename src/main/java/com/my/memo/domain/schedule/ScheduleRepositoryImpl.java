@@ -6,13 +6,16 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-interface Dao {
-    List<Schedule> findPublicSchedulesWithFilters(long limit, long page, String modifiedAt,
-                                                  String authorName, String startModifiedAt, String endModifiedAt);
+import static com.my.memo.dto.schedule.ReqDto.PublicScheduleFilter;
+import static com.my.memo.dto.schedule.ReqDto.UserScheduleFilter;
 
-    List<Schedule> findAllByUserIdWithPagination(User user, long limit, long page, String modifiedAt, String startModifiedAt, String endModifiedAt);
+interface Dao {
+    List<Schedule> findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter);
+
+    List<Schedule> findUserSchedulesWithFilters(User user, UserScheduleFilter userScheduleFilter);
 
 }
 
@@ -22,123 +25,122 @@ public class ScheduleRepositoryImpl implements Dao {
 
     //TODO 테스트하기
     @Override
-    public List<Schedule> findAllByUserIdWithPagination(User user, long limit, long page, String modifiedAt, String startModifiedAt, String endModifiedAt) {
+    public List<Schedule> findUserSchedulesWithFilters(User user, UserScheduleFilter filter) {
         StringBuilder sql = new StringBuilder("select s from Schedule s where s.user = :user ");
-        if (modifiedAt != null && !modifiedAt.isEmpty()) {
-            switch (modifiedAt) {
-                case "30m":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 30 MINUTE ");
-                    break;
-                case "1h":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 1 HOUR ");
-                    break;
-                case "1d":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 1 DAY ");
-                    break;
-                case "1w":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 1 WEEK ");
-                    break;
-                case "1m":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 1 MONTH ");
-                    break;
-                case "3m":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 3 MONTH ");
-                    break;
-                case "6m":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 6 MONTH ");
-                    break;
+
+        LocalDateTime modifiedTime = null;
+
+        //modifiedTime 계산
+        if (filter.getModifiedAt() != null && !filter.getModifiedAt().isEmpty()) {
+            modifiedTime = calculateModifiedTime(filter.getModifiedAt());
+
+            if (modifiedTime != null) {
+                sql.append("and s.lastModifiedAt >= :modifiedTime ");
             }
-        } else if (startModifiedAt != null && endModifiedAt != null) {
+        }
+        //startModifiedAt, endModifiedAt 필터링
+        else if (filter.getStartModifiedAt() != null && filter.getEndModifiedAt() != null) {
             sql.append("and s.lastModifiedAt between :startModifiedAt and :endModifiedAt ");
-        } else if (startModifiedAt != null) {
+        } else if (filter.getStartModifiedAt() != null) {
             sql.append("and s.lastModifiedAt >= :startModifiedAt ");
-        } else if (endModifiedAt != null) {
+        } else if (filter.getEndModifiedAt() != null) {
             sql.append("and s.lastModifiedAt <= :endModifiedAt ");
         }
 
-        sql.append("order by  s.lastModifiedAt desc"); //수정일 기준 내림차순 정렬
+        //수정일 기준 내림차순 정렬
+        sql.append("order by  s.lastModifiedAt desc");
 
         TypedQuery<Schedule> query = em.createQuery(sql.toString(), Schedule.class);
         query.setParameter("user", user);
 
-        if (startModifiedAt != null && endModifiedAt != null) {
-            query.setParameter("startModifiedAt", startModifiedAt + " 00:00:00");
-            query.setParameter("endModifiedAt", endModifiedAt + " 23:59:59");
-        } else if (startModifiedAt != null) {
-            query.setParameter("startModifiedAt", startModifiedAt + " 00:00:00");
-        } else if (endModifiedAt != null) {
-            query.setParameter("endModifiedAt", endModifiedAt + " 23:59:59");
+        if (modifiedTime != null) {
+            query.setParameter("modifiedTime", modifiedTime);
         }
 
-        query.setFirstResult((int) (page * limit));
-        query.setMaxResults((int) (limit + 1));
+        if (filter.getStartModifiedAt() != null && filter.getEndModifiedAt() != null) {
+            query.setParameter("startModifiedAt", filter.getStartModifiedAt() + " 00:00:00");
+            query.setParameter("endModifiedAt", filter.getEndModifiedAt() + " 23:59:59");
+        } else if (filter.getStartModifiedAt() != null) {
+            query.setParameter("startModifiedAt", filter.getStartModifiedAt() + " 00:00:00");
+        } else if (filter.getEndModifiedAt() != null) {
+            query.setParameter("endModifiedAt", filter.getEndModifiedAt() + " 23:59:59");
+        }
+
+        query.setFirstResult((int) (filter.getPage() * filter.getLimit()));
+        query.setMaxResults((int) (filter.getLimit() + 1));
 
         return query.getResultList();
 
     }
 
     @Override
-    public List<Schedule> findPublicSchedulesWithFilters(long limit, long page, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt) {
+    public List<Schedule> findPublicSchedulesWithFilters(PublicScheduleFilter filter) {
         StringBuilder sql = new StringBuilder("select s from Schedule s " +
                 "left join fetch s.user u " +
                 "where s.isPublic = true ");
 
-        if (modifiedAt != null && !modifiedAt.isEmpty()) {
-            switch (modifiedAt) {
-                case "30m":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 30 MINUTE ");
-                    break;
-                case "1h":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 1 HOUR ");
-                    break;
-                case "1d":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 1 DAY ");
-                    break;
-                case "1w":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 1 WEEK ");
-                    break;
-                case "1m":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 1 MONTH ");
-                    break;
-                case "3m":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 3 MONTH ");
-                    break;
-                case "6m":
-                    sql.append("and s.lastModifiedAt >= NOW() - INTERVAL 6 MONTH ");
-                    break;
+        LocalDateTime modifiedTime = null;
+
+        //modifiedTime 계산
+        if (filter.getModifiedAt() != null && !filter.getModifiedAt().isEmpty()) {
+            modifiedTime = calculateModifiedTime(filter.getModifiedAt());
+
+            if (modifiedTime != null) {
+                sql.append("and s.lastModifiedAt >= :modifiedTime ");
             }
-        } else if (startModifiedAt != null && endModifiedAt != null) {
+        }
+        //startModifiedAt, endModifiedAt 필터링
+        else if (filter.getStartModifiedAt() != null && filter.getEndModifiedAt() != null) {
             sql.append("and s.lastModifiedAt between :startModifiedAt and :endModifiedAt ");
-        } else if (startModifiedAt != null) {
+        } else if (filter.getStartModifiedAt() != null) {
             sql.append("and s.lastModifiedAt >= :startModifiedAt ");
-        } else if (endModifiedAt != null) {
+        } else if (filter.getEndModifiedAt() != null) {
             sql.append("and s.lastModifiedAt <= :endModifiedAt ");
         }
 
-        if (authorName != null && !authorName.isEmpty()) {
+        //작성자 필터링
+        if (filter.getAuthorName() != null && !filter.getAuthorName().isEmpty()) {
             sql.append("and u.name like :authorName ");
         }
 
-        sql.append("order by  s.lastModifiedAt desc"); //수정일 기준 내림차순 정렬
+        //수정일 기준 내림차순 정렬
+        sql.append("order by  s.lastModifiedAt desc");
 
         TypedQuery<Schedule> query = em.createQuery(sql.toString(), Schedule.class);
 
-        if (startModifiedAt != null && endModifiedAt != null) {
-            query.setParameter("startModifiedAt", startModifiedAt + " 00:00:00");
-            query.setParameter("endModifiedAt", endModifiedAt + " 23:59:59");
-        } else if (startModifiedAt != null) {
-            query.setParameter("startModifiedAt", startModifiedAt + " 00:00:00");
-        } else if (endModifiedAt != null) {
-            query.setParameter("endModifiedAt", endModifiedAt + " 23:59:59");
+        if (modifiedTime != null) {
+            query.setParameter("modifiedTime", modifiedTime);
         }
 
-        if (authorName != null && !authorName.isEmpty()) {
-            query.setParameter("authorName", "%" + authorName + "%");
+        if (filter.getStartModifiedAt() != null && filter.getEndModifiedAt() != null) {
+            query.setParameter("startModifiedAt", filter.getStartModifiedAt() + " 00:00:00");
+            query.setParameter("endModifiedAt", filter.getEndModifiedAt() + " 23:59:59");
+        } else if (filter.getStartModifiedAt() != null) {
+            query.setParameter("startModifiedAt", filter.getStartModifiedAt() + " 00:00:00");
+        } else if (filter.getEndModifiedAt() != null) {
+            query.setParameter("endModifiedAt", filter.getEndModifiedAt() + " 23:59:59");
         }
 
-        query.setFirstResult((int) (page * limit));
-        query.setMaxResults((int) (limit + 1));
+        if (filter.getAuthorName() != null && !filter.getAuthorName().isEmpty()) {
+            query.setParameter("authorName", "%" + filter.getAuthorName() + "%");
+        }
+
+        query.setFirstResult((int) (filter.getPage() * filter.getLimit()));
+        query.setMaxResults((int) (filter.getLimit() + 1));
 
         return query.getResultList();
+    }
+
+    private LocalDateTime calculateModifiedTime(String modifiedAt) {
+        return switch (modifiedAt) {
+            case "30m" -> LocalDateTime.now().minusMinutes(30);
+            case "1h" -> LocalDateTime.now().minusHours(1);
+            case "1d" -> LocalDateTime.now().minusDays(1);
+            case "1w" -> LocalDateTime.now().minusWeeks(1);
+            case "1m" -> LocalDateTime.now().minusMonths(1);
+            case "3m" -> LocalDateTime.now().minusMonths(3);
+            case "6m" -> LocalDateTime.now().minusMonths(6);
+            default -> null;
+        };
     }
 }

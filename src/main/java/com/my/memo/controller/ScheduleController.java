@@ -8,8 +8,6 @@ import com.my.memo.service.ScheduleUserService;
 import com.my.memo.util.api.ApiResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static com.my.memo.dto.comment.ReqDto.CommentCreateReqDto;
-import static com.my.memo.dto.schedule.ReqDto.ScheduleCreateReqDto;
-import static com.my.memo.dto.schedule.ReqDto.ScheduleModifyReqDto;
+import static com.my.memo.dto.schedule.ReqDto.*;
 
 
 @RequiredArgsConstructor
@@ -68,27 +65,16 @@ public class ScheduleController {
 
 
     @GetMapping("/schedules")
-    public ResponseEntity<?> findPublicSchedules(
-            @RequestParam(name = "page", defaultValue = "0", required = false) @Min(0) Long page,
-            @RequestParam(name = "limit", defaultValue = "10", required = false) @Min(1) Long limit,
-            @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m)$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
-            @RequestParam(name = "startModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String startModifiedAt,
-            @RequestParam(name = "endModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String endModifiedAt,
-            @RequestParam(name = "authorName", required = false) String authorName) {
-
-        return new ResponseEntity<>(ApiResult.success(scheduleService.findPublicSchedulesWithFilters(page, limit, modifiedAt, authorName, startModifiedAt, endModifiedAt)), HttpStatus.OK);
+    public ResponseEntity<?> findPublicSchedules(@Valid PublicScheduleFilter publicScheduleFilter) {
+        return new ResponseEntity<>(ApiResult.success(scheduleService.findPublicSchedulesWithFilters(publicScheduleFilter)), HttpStatus.OK);
     }
 
 
     @RequireAuth
     @GetMapping("/s/schedules")
-    public ResponseEntity<?> findUserSchedules(@RequestParam(name = "page", defaultValue = "0") @Min(0) Long page,
-                                               @RequestParam(name = "limit", defaultValue = "10") @Min(1) Long limit,
-                                               @RequestParam(name = "modifiedAt", required = false) @Pattern(regexp = "^(30m|1h|1d|1w|1m|3m|6m)$", message = "유효하지 않은 modifiedAt 값입니다") String modifiedAt,
-                                               @RequestParam(name = "startModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String startModifiedAt,
-                                               @RequestParam(name = "endModifiedAt", required = false) @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다") String endModifiedAt,
+    public ResponseEntity<?> findUserSchedules(@Valid UserScheduleFilter userScheduleFilter,
                                                HttpServletRequest request) {
-        return new ResponseEntity<>(ApiResult.success(scheduleService.findUserSchedules(request, page, limit, modifiedAt, startModifiedAt, endModifiedAt)), HttpStatus.OK);
+        return new ResponseEntity<>(ApiResult.success(scheduleService.findUserSchedules(userScheduleFilter, request)), HttpStatus.OK);
     }
 
 
