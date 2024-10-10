@@ -15,8 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.my.memo.dto.schedule.ReqDto.ScheduleCreateReqDto;
-import static com.my.memo.dto.schedule.ReqDto.ScheduleModifyReqDto;
+import static com.my.memo.dto.schedule.ReqDto.*;
 import static com.my.memo.dto.schedule.RespDto.*;
 
 /**
@@ -35,30 +34,19 @@ public class ScheduleService {
     private final Logger log = LoggerFactory.getLogger(ScheduleService.class);
 
 
-    /**
-     * 필터링된 공개 일정 목록을 조회합니다
-     * <p>
-     * 페이지네이션과 필터링(수정일, 작성자명 등)이 적용된 공개 일정을 조회합니다
-     *
-     * @param page            페이지 번호
-     * @param limit           페이지당 일정 수
-     * @param modifiedAt      수정일 필터
-     * @param authorName      작성자명 필터
-     * @param startModifiedAt 수정일 범위의 시작 날짜
-     * @param endModifiedAt   수정일 범위의 종료 날짜
-     * @return 조회된 일정 목록과 다음 페이지 존재 여부가 담긴 DTO
-     */
     //TODO 테스트
-    public ScheduleListRespDto findPublicSchedulesWithFilters(long page, long limit, String modifiedAt, String authorName, String startModifiedAt, String endModifiedAt) {
+    public ScheduleListRespDto findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter) {
 
-        List<Schedule> scheduleList = scheduleRepository.findPublicSchedulesWithFilters(limit, page, modifiedAt, authorName, startModifiedAt, endModifiedAt);
+        List<Schedule> scheduleList = scheduleRepository.findPublicSchedulesWithFilters(
+                publicScheduleFilter
+        );
         scheduleRepository.getCommentsBySchedules(scheduleList); //코멘트 초기화
 
         boolean hasNextPage = false;
 
-        if (scheduleList.size() > limit) {
+        if (scheduleList.size() > publicScheduleFilter.getLimit()) {
             hasNextPage = true;
-            scheduleList = scheduleList.subList(0, (int) limit);
+            scheduleList = scheduleList.subList(0, (int) publicScheduleFilter.getLimit().longValue());
         }
 
         return new ScheduleListRespDto(scheduleList, hasNextPage);
@@ -114,7 +102,7 @@ public class ScheduleService {
     }
 
 
-    public UserScheduleListRespDto findUserSchedules(HttpServletRequest request, long page, long limit, String modifiedAt, String startModifiedAt, String endModifiedAt) {
+    public UserScheduleListRespDto findUserSchedules(UserScheduleFilter userScheduleFilter, HttpServletRequest request) {
         //유저 꺼내기
         Long userId = (Long) request.getAttribute("userId");
 
@@ -122,19 +110,19 @@ public class ScheduleService {
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
         );
 
-        List<Schedule> scheduleList = scheduleRepository.findAllByUserIdWithPagination(userPS, limit, page, modifiedAt, startModifiedAt, endModifiedAt);
+        List<Schedule> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
         scheduleRepository.getCommentsBySchedules(scheduleList); //코멘트 초기화
 
         boolean hasNextPage = false;
 
         // 만약 가져온 스케줄의 수가 limit을 초과하면 -> 다음 페이지 있음
-        if (scheduleList.size() > limit) {
+        if (scheduleList.size() > userScheduleFilter.getLimit()) {
             hasNextPage = true;
-            scheduleList = scheduleList.subList(0, (int) limit);  // 현재 페이지에 필요한 데이터만 남김
+            scheduleList = scheduleList.subList(0, (int) userScheduleFilter.getLimit().longValue());  // 현재 페이지에 필요한 데이터만 남김
         }
 
         log.info("유저 전체 일정 조회 완료: 유저 ID {}", userId);
-        return new UserScheduleListRespDto(scheduleList, hasNextPage);
+        return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS);
     }
 
 
