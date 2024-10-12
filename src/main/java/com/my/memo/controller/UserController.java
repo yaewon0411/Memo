@@ -53,8 +53,8 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResult<LoginRespDto>> login(@RequestBody @Valid LoginReqDto loginReqDto,
-                                                         HttpServletResponse response, HttpServletRequest request) {
-        return new ResponseEntity<>(ApiResult.success(userService.login(loginReqDto, response, request)), HttpStatus.OK);
+                                                         HttpServletResponse response) {
+        return new ResponseEntity<>(ApiResult.success(userService.login(loginReqDto, response)), HttpStatus.OK);
     }
 
 }

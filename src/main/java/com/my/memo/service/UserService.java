@@ -101,7 +101,7 @@ public class UserService {
     }
 
 
-    public LoginRespDto login(LoginReqDto loginReqDto, HttpServletResponse response, HttpServletRequest request) {
+    public LoginRespDto login(LoginReqDto loginReqDto, HttpServletResponse response) {
 
         User userPS = userRepository.findUserByEmail(loginReqDto.getEmail()).orElseThrow(
                 () -> new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "이메일이 일치하지 않습니다")
