@@ -33,14 +33,6 @@ public class UserService {
     private final JwtProvider jwtProvider;
 
 
-//    public UserLogoutRespDto logout(HttpServletRequest request) {
-//        Long userId = (Long) request.getAttribute("userId");
-//        //request.invalidate();
-//        log.info("로그아웃 완료: 유저 ID {}", userId);
-//        return new UserLogoutRespDto(true, userId);
-//    }
-
-
     @Transactional
     public UserDeleteRespDto deleteUser(HttpServletRequest request) {
         //유저 꺼내기

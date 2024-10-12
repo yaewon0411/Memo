@@ -23,13 +23,6 @@ public class UserController {
     private final UserService userService;
 
 
-//    @RequireAuth(role = Role.USER)
-//    @PostMapping("/s/logout")
-//    public ResponseEntity<ApiResult<UserLogoutRespDto>> logout(HttpServletRequest request) {
-//        return new ResponseEntity<>(ApiResult.success(userService.logout(request)), HttpStatus.OK);
-//    }
-
-
     @RequireAuth(role = Role.USER)
     @DeleteMapping("/s/users")
     public ResponseEntity<ApiResult<UserDeleteRespDto>> deleteUser(HttpServletRequest request) {
