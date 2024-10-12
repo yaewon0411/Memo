@@ -3,13 +3,13 @@ package com.my.memo.dto.schedule;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.schedule.Schedule;
+import com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto;
 import com.my.memo.domain.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RespDto {
@@ -29,10 +29,10 @@ public class RespDto {
         private boolean hasNextPage;
         private int size;
 
-        public PublicScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage, Map<Schedule, Long> scheduleWithCommentCounts) {
+        public PublicScheduleListRespDto(List<ScheduleWithCommentAndUserCountsDto> scheduleList, boolean hasNextPage) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
-                    .map(s -> new ScheduleRespDto(s, scheduleWithCommentCounts))
+                    .map(s -> new ScheduleRespDto(s))
                     .collect(Collectors.toList());
             this.size = this.scheduleRespDtoList.size();
         }
@@ -51,15 +51,15 @@ public class RespDto {
             private int commentCnt;
             private int assignedUserCnt;
 
-            public ScheduleRespDto(Schedule schedule, Map<Schedule, Long> scheduleWithCommentCounts) {
-                this.content = schedule.getContent();
-                this.isPublic = schedule.isPublic();
-                this.id = schedule.getId();
-                this.name = schedule.getUser().getName();
-                this.createdAt = schedule.getCreatedAt();
-                this.modifiedAt = schedule.getLastModifiedAt();
-                this.assignedUserCnt = schedule.getAssignedUserList().size();
-                this.commentCnt = scheduleWithCommentCounts.get(schedule) != null ? (int) scheduleWithCommentCounts.get(schedule).longValue() : 0;
+            public ScheduleRespDto(ScheduleWithCommentAndUserCountsDto scheduleDto) {
+                this.content = scheduleDto.getSchedule().getContent();
+                this.isPublic = scheduleDto.getSchedule().isPublic();
+                this.id = scheduleDto.getSchedule().getId();
+                this.name = scheduleDto.getSchedule().getUser().getName();
+                this.createdAt = scheduleDto.getSchedule().getCreatedAt();
+                this.modifiedAt = scheduleDto.getSchedule().getLastModifiedAt();
+                this.assignedUserCnt = (int) scheduleDto.getAssignedUserCnt().longValue();
+                this.commentCnt = (int) scheduleDto.getCommentCnt().longValue();
             }
         }
     }
@@ -104,10 +104,10 @@ public class RespDto {
         private int size;
         private String name;
 
-        public UserScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage, User user, Map<Schedule, Long> scheduleWithCommentCounts) {
+        public UserScheduleListRespDto(List<ScheduleWithCommentAndUserCountsDto> scheduleList, boolean hasNextPage, User user) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
-                    .map(s -> new ScheduleRespDto(s, scheduleWithCommentCounts))
+                    .map(s -> new ScheduleRespDto(s))
                     .collect(Collectors.toList());
             this.size = this.scheduleRespDtoList.size();
             this.name = user.getName();
@@ -127,14 +127,14 @@ public class RespDto {
             private int assignedUserCnt;
 
 
-            public ScheduleRespDto(Schedule schedule, Map<Schedule, Long> scheduleWithCommentCounts) {
-                this.content = schedule.getContent();
-                this.isPublic = schedule.isPublic();
-                this.id = schedule.getId();
-                this.createdAt = schedule.getCreatedAt();
-                this.modifiedAt = schedule.getLastModifiedAt();
-                this.assignedUserCnt = schedule.getAssignedUserList().size();
-                this.commentCnt = scheduleWithCommentCounts.get(schedule) != null ? (int) scheduleWithCommentCounts.get(schedule).longValue() : 0;
+            public ScheduleRespDto(ScheduleWithCommentAndUserCountsDto scheduleDto) {
+                this.content = scheduleDto.getSchedule().getContent();
+                this.isPublic = scheduleDto.getSchedule().isPublic();
+                this.id = scheduleDto.getSchedule().getId();
+                this.createdAt = scheduleDto.getSchedule().getCreatedAt();
+                this.modifiedAt = scheduleDto.getSchedule().getLastModifiedAt();
+                this.assignedUserCnt = (int) scheduleDto.getAssignedUserCnt().longValue();
+                this.commentCnt = (int) scheduleDto.getCommentCnt().longValue();
             }
         }
 

@@ -1,6 +1,7 @@
 package com.my.memo.domain.schedule;
 
 
+import com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto;
 import com.my.memo.domain.user.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -13,9 +14,9 @@ import static com.my.memo.dto.schedule.ReqDto.PublicScheduleFilter;
 import static com.my.memo.dto.schedule.ReqDto.UserScheduleFilter;
 
 interface Dao {
-    List<Schedule> findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter);
+    List<ScheduleWithCommentAndUserCountsDto> findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter);
 
-    List<Schedule> findUserSchedulesWithFilters(User user, UserScheduleFilter userScheduleFilter);
+    List<ScheduleWithCommentAndUserCountsDto> findUserSchedulesWithFilters(User user, UserScheduleFilter userScheduleFilter);
 
 }
 
@@ -25,10 +26,16 @@ public class ScheduleRepositoryImpl implements Dao {
 
     //TODO 테스트하기
     @Override
-    public List<Schedule> findUserSchedulesWithFilters(User user, UserScheduleFilter filter) {
-        StringBuilder sql = new StringBuilder("select s from Schedule s " +
-                "left join fetch s.assignedUserList al " +
-                "where s.user = :user ");
+    public List<ScheduleWithCommentAndUserCountsDto> findUserSchedulesWithFilters(User user, UserScheduleFilter filter) {
+
+        String jpql =
+                "select new com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto(s, count(distinct c.id) as commentCnt, count(distinct su.id) as assignedUserCnt) " +
+                        "from Schedule s " +
+                        "left join Comment c on s.id = c.schedule.id " +
+                        "left join ScheduleUser su on s.id = su.schedule.id " +
+                        "where s.user = :user ";
+
+        StringBuilder sql = new StringBuilder(jpql);
 
         LocalDateTime modifiedTime = null;
 
@@ -50,9 +57,10 @@ public class ScheduleRepositoryImpl implements Dao {
         }
 
         //수정일 기준 내림차순 정렬
-        sql.append("order by  s.lastModifiedAt desc");
+        sql.append("group by s ");
+        sql.append("order by s.lastModifiedAt desc");
 
-        TypedQuery<Schedule> query = em.createQuery(sql.toString(), Schedule.class);
+        TypedQuery<ScheduleWithCommentAndUserCountsDto> query = em.createQuery(sql.toString(), ScheduleWithCommentAndUserCountsDto.class);
         query.setParameter("user", user);
 
         if (modifiedTime != null) {
@@ -72,15 +80,20 @@ public class ScheduleRepositoryImpl implements Dao {
         query.setMaxResults((int) (filter.getLimit() + 1));
 
         return query.getResultList();
-
     }
 
     @Override
-    public List<Schedule> findPublicSchedulesWithFilters(PublicScheduleFilter filter) {
-        StringBuilder sql = new StringBuilder("select s from Schedule s " +
-                "left join fetch s.user u " +
-                "left join fetch s.assignedUserList al " +
-                "where s.isPublic = true ");
+    public List<ScheduleWithCommentAndUserCountsDto> findPublicSchedulesWithFilters(PublicScheduleFilter filter) {
+
+        String jpql =
+                "select new com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto(s, count(distinct c.id) as commentCnt, count(distinct su.id) as assignedUserCnt) " +
+                        "from Schedule s " +
+                        "left join Comment c on s.id = c.schedule.id " +
+                        "left join ScheduleUser su on s.id = su.schedule.id " +
+                        "left join fetch s.user u " +
+                        "where s.isPublic = true ";
+
+        StringBuilder sql = new StringBuilder(jpql);
 
         LocalDateTime modifiedTime = null;
 
@@ -107,9 +120,10 @@ public class ScheduleRepositoryImpl implements Dao {
         }
 
         //수정일 기준 내림차순 정렬
+        sql.append("group by s ");
         sql.append("order by  s.lastModifiedAt desc");
 
-        TypedQuery<Schedule> query = em.createQuery(sql.toString(), Schedule.class);
+        TypedQuery<ScheduleWithCommentAndUserCountsDto> query = em.createQuery(sql.toString(), ScheduleWithCommentAndUserCountsDto.class);
 
         if (modifiedTime != null) {
             query.setParameter("modifiedTime", modifiedTime);

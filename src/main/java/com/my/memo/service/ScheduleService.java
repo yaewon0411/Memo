@@ -2,9 +2,10 @@ package com.my.memo.service;
 
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.comment.CommentRepository;
-import com.my.memo.domain.comment.dto.ScheduleCommentCountDto;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.schedule.ScheduleRepository;
+import com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto;
+import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
@@ -17,8 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.my.memo.dto.schedule.ReqDto.*;
 import static com.my.memo.dto.schedule.RespDto.*;
@@ -32,12 +31,13 @@ public class ScheduleService {
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
     private final CommentRepository commentRepository;
+    private final ScheduleUserRepository scheduleUserRepository;
     private final Logger log = LoggerFactory.getLogger(ScheduleService.class);
 
 
     public PublicScheduleListRespDto findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter) {
 
-        List<Schedule> scheduleList = scheduleRepository.findPublicSchedulesWithFilters(publicScheduleFilter);
+        List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findPublicSchedulesWithFilters(publicScheduleFilter);
 
         boolean hasNextPage = false;
 
@@ -46,15 +46,7 @@ public class ScheduleService {
             scheduleList = scheduleList.subList(0, (int) publicScheduleFilter.getLimit().longValue());
         }
 
-        Map<Schedule, Long> scheduleWithCommentCounts = commentRepository
-                .countCommentsBySchedules(scheduleList)
-                .stream()
-                .collect(Collectors.toMap(
-                        ScheduleCommentCountDto::getSchedule,
-                        ScheduleCommentCountDto::getCommentCnt
-                ));
-
-        return new PublicScheduleListRespDto(scheduleList, hasNextPage, scheduleWithCommentCounts);
+        return new PublicScheduleListRespDto(scheduleList, hasNextPage);
     }
 
 
@@ -116,7 +108,7 @@ public class ScheduleService {
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
         );
 
-        List<Schedule> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
+        List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
 
         boolean hasNextPage = false;
 
@@ -126,16 +118,8 @@ public class ScheduleService {
             scheduleList = scheduleList.subList(0, (int) userScheduleFilter.getLimit().longValue());  // 현재 페이지에 필요한 데이터만 남김
         }
 
-        Map<Schedule, Long> scheduleWithCommentCounts = commentRepository
-                .countCommentsBySchedules(scheduleList)
-                .stream()
-                .collect(Collectors.toMap(
-                        ScheduleCommentCountDto::getSchedule,
-                        ScheduleCommentCountDto::getCommentCnt
-                ));
-
         log.info("유저 전체 일정 조회 완료: 유저 ID {}", userId);
-        return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS, scheduleWithCommentCounts);
+        return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS);
     }
 
 
@@ -157,6 +141,7 @@ public class ScheduleService {
         }
 
         List<Comment> commentList = commentRepository.findCommentsWithUserBySchedule(schedulePS);
+
 
         log.info("선택한 일정 조회 완료: 유저 ID {}, 일정 ID {}", userId, scheduleId);
         return new ScheduleRespDto(schedulePS, commentList);

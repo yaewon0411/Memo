@@ -5,4 +5,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ScheduleUserRepository extends JpaRepository<ScheduleUser, Long> {
+
+
 }
+
+
