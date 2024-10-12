@@ -30,5 +30,6 @@ public class ScheduleUser extends BaseEntity {
     public ScheduleUser(User user, Schedule schedule) {
         this.user = user;
         this.schedule = schedule;
+        schedule.getAssignedUserList().add(this);
     }
 }

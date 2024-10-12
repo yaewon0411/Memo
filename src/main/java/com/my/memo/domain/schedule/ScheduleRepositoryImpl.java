@@ -26,7 +26,9 @@ public class ScheduleRepositoryImpl implements Dao {
     //TODO 테스트하기
     @Override
     public List<Schedule> findUserSchedulesWithFilters(User user, UserScheduleFilter filter) {
-        StringBuilder sql = new StringBuilder("select s from Schedule s where s.user = :user ");
+        StringBuilder sql = new StringBuilder("select s from Schedule s " +
+                "left join fetch s.assignedUserList al " +
+                "where s.user = :user ");
 
         LocalDateTime modifiedTime = null;
 
@@ -77,6 +79,7 @@ public class ScheduleRepositoryImpl implements Dao {
     public List<Schedule> findPublicSchedulesWithFilters(PublicScheduleFilter filter) {
         StringBuilder sql = new StringBuilder("select s from Schedule s " +
                 "left join fetch s.user u " +
+                "left join fetch s.assignedUserList al " +
                 "where s.isPublic = true ");
 
         LocalDateTime modifiedTime = null;

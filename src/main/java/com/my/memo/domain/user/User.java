@@ -1,7 +1,6 @@
 package com.my.memo.domain.user;
 
 import com.my.memo.domain.base.BaseEntity;
-import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.schedule.Schedule;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -38,11 +37,9 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true) //TODO 유저 삭제해도 일정은 남겨둘지????
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Schedule> scheduleList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user") //유저 삭제해도 코멘트는 남겨두기
-    private List<Comment> commentList = new ArrayList<>();
 
     @Builder
     public User(Long id, String name, String email, String password, Role role) {

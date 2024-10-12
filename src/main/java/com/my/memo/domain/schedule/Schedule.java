@@ -1,7 +1,6 @@
 package com.my.memo.domain.schedule;
 
 import com.my.memo.domain.base.BaseEntity;
-import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.user.User;
 import jakarta.persistence.*;
@@ -15,35 +14,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.my.memo.dto.schedule.ReqDto.ScheduleModifyReqDto;
-import static jakarta.persistence.CascadeType.REMOVE;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "schedules")
 public class Schedule extends BaseEntity {
+
+    /*
+     * 해당 부분은 JPA 스펙상 원칙적으로 CascadeType.PERSIST이 없어도 orphanRemoval만으로 삭제되어야 하는 것이 맞습니다.
+     * 하이버네이트 구현체에서는 해당 기능에 버그가 있고, 그래서 CascadeType.PERSIST(또는 ALL)이 함께 적용되어야 orphanRemoval이 동작합니다.
+     * */
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    List<ScheduleUser> assignedUserList = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "schedule_id")
     private Long id;
-
     @Column(length = 512)
     private String content;
     private LocalDateTime startAt;
     private LocalDateTime endAt;
-
     private boolean isPublic;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    @OneToMany(mappedBy = "schedule", cascade = REMOVE)
-    private List<Comment> commentList = new ArrayList<>();
-
-
-    @OneToMany(mappedBy = "schedule", cascade = REMOVE, orphanRemoval = true)
-    private List<ScheduleUser> assignedUserList = new ArrayList<>();
 
     @Builder
     public Schedule(Long id, String content, LocalDateTime startAt, LocalDateTime endAt, boolean isPublic, User user) {
@@ -54,10 +49,6 @@ public class Schedule extends BaseEntity {
         this.isPublic = isPublic;
         this.user = user;
         user.getScheduleList().add(this);
-    }
-
-    public void assignUser(ScheduleUser scheduleUser) {
-        this.assignedUserList.add(scheduleUser);
     }
 
 

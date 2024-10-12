@@ -56,7 +56,7 @@ public class JwtProvider {
                     .getBody();
 
         } catch (Exception e) {
-            log.error("유효하지 않은 토큰: ", e);
+            log.warn("유효하지 않은 토큰: ", e);
             throw new CustomJwtException(HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다");
         }
     }
@@ -67,7 +67,7 @@ public class JwtProvider {
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(JwtVo.TOKEN_PREFIX)) {
             return tokenValue.substring(7);
         }
-        log.error("토큰을 찾을 수 없음");
+        log.warn("토큰을 찾을 수 없음");
         throw new CustomJwtException(HttpStatus.NOT_FOUND.value(), "토큰을 찾을 수 없습니다");
     }
 
@@ -87,16 +87,16 @@ public class JwtProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (SecurityException | MalformedJwtException | SignatureException e) {
-            log.error("Invalid JWT signatur: 유효하지 않은 JWT 서명");
+            log.warn("Invalid JWT signature: 유효하지 않은 JWT 서명");
             throw new CustomJwtException(HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰 서명 입니다");
         } catch (ExpiredJwtException e) {
-            log.error("Expired JWT token: 만료된 JWT 토큰");
+            log.warn("Expired JWT token: 만료된 JWT 토큰");
             throw new CustomJwtException(HttpStatus.UNAUTHORIZED.value(), "만료된 토큰입니다");
         } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT token: 지원되지 않는 JWT 토큰");
+            log.warn("Unsupported JWT token: 지원되지 않는 JWT 토큰");
             throw new CustomJwtException(HttpStatus.BAD_REQUEST.value(), "지원되지 않는 토큰입니다");
         } catch (IllegalArgumentException e) {
-            log.error("JWT claims is empty: 잘못된 JWT 토큰");
+            log.warn("JWT claims is empty: 잘못된 JWT 토큰");
             throw new CustomJwtException(HttpStatus.BAD_REQUEST.value(), "잘못된 JWT 토큰입니다");
         }
     }

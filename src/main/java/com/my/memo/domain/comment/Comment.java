@@ -9,6 +9,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import static com.my.memo.dto.comment.ReqDto.CommentModifyReqDto;
+
+
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -17,6 +20,7 @@ public class Comment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@Column(name = "comment_id")
     private Long id;
 
     @Column(length = 512)
@@ -35,7 +39,10 @@ public class Comment extends BaseEntity {
         this.content = content;
         this.user = user;
         this.schedule = schedule;
-        this.user.getCommentList().add(this);
-        this.schedule.getCommentList().add(this);
+    }
+
+    public void modify(CommentModifyReqDto commentModifyReqDto) {
+        if (commentModifyReqDto.getContent() != null)
+            this.content = commentModifyReqDto.getContent();
     }
 }

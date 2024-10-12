@@ -19,16 +19,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private final static Logger log = LoggerFactory.getLogger(WebMvcConfig.class);
     private final AuthInterceptor authInterceptor;
 
-    /**
-     * `AuthInterceptor`를 인터셉터 체인에 등록하고, 특정 경로에 대해 인터셉터가 적용되도록 설정합니다
-     * <p>
-     * `/api/s/**` 경로에 대해 `AuthInterceptor`가 적용되며
-     * <p>
-     * 회원가입(`/api/join`), 로그인(`/api/login`),
-     * 공개 일정 관련 경로(`/api/schedules/**`, `/api/s/schedules/*`)는 인터셉터에서 제외됩니다
-     *
-     * @param registry InterceptorRegistry
-     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         log.debug("디버그: authInterceptor 등록");

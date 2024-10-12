@@ -43,15 +43,14 @@ public class ScheduleUserService {
         );
 
         User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 유저는 존재하지 않습니다")
         );
 
         ScheduleUser scheduleUserPS = scheduleUserRepository.save(new ScheduleUser(userPS, schedulePS));
 
-        schedulePS.assignUser(scheduleUserPS);
         log.info("유저 ID {}: 일정 ID {}에 유저 ID {}를 할당", authUserId, scheduleId, userId);
 
-        return new UserAssignRespDto(true);
+        return new UserAssignRespDto(scheduleUserPS);
     }
 
 

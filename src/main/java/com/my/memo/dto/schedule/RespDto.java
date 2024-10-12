@@ -1,6 +1,7 @@
 package com.my.memo.dto.schedule;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.user.User;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RespDto {
@@ -22,15 +24,15 @@ public class RespDto {
      * */
     @NoArgsConstructor
     @Getter
-    public static class ScheduleListRespDto {
+    public static class PublicScheduleListRespDto {
         private List<ScheduleRespDto> scheduleRespDtoList;
         private boolean hasNextPage;
         private int size;
 
-        public ScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage) {
+        public PublicScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage, Map<Schedule, Long> scheduleWithCommentCounts) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
-                    .map(ScheduleRespDto::new)
+                    .map(s -> new ScheduleRespDto(s, scheduleWithCommentCounts))
                     .collect(Collectors.toList());
             this.size = this.scheduleRespDtoList.size();
         }
@@ -47,15 +49,17 @@ public class RespDto {
             @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
             private LocalDateTime modifiedAt;
             private int commentCnt;
+            private int assignedUserCnt;
 
-            public ScheduleRespDto(Schedule schedule) {
+            public ScheduleRespDto(Schedule schedule, Map<Schedule, Long> scheduleWithCommentCounts) {
                 this.content = schedule.getContent();
                 this.isPublic = schedule.isPublic();
                 this.id = schedule.getId();
                 this.name = schedule.getUser().getName();
                 this.createdAt = schedule.getCreatedAt();
                 this.modifiedAt = schedule.getLastModifiedAt();
-                this.commentCnt = schedule.getCommentList().size();
+                this.assignedUserCnt = schedule.getAssignedUserList().size();
+                this.commentCnt = scheduleWithCommentCounts.get(schedule) != null ? (int) scheduleWithCommentCounts.get(schedule).longValue() : 0;
             }
         }
     }
@@ -100,10 +104,10 @@ public class RespDto {
         private int size;
         private String name;
 
-        public UserScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage, User user) {
+        public UserScheduleListRespDto(List<Schedule> scheduleList, boolean hasNextPage, User user, Map<Schedule, Long> scheduleWithCommentCounts) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
-                    .map(ScheduleRespDto::new)
+                    .map(s -> new ScheduleRespDto(s, scheduleWithCommentCounts))
                     .collect(Collectors.toList());
             this.size = this.scheduleRespDtoList.size();
             this.name = user.getName();
@@ -120,14 +124,17 @@ public class RespDto {
             @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
             private LocalDateTime modifiedAt;
             private int commentCnt;
+            private int assignedUserCnt;
 
-            public ScheduleRespDto(Schedule schedule) {
+
+            public ScheduleRespDto(Schedule schedule, Map<Schedule, Long> scheduleWithCommentCounts) {
                 this.content = schedule.getContent();
                 this.isPublic = schedule.isPublic();
                 this.id = schedule.getId();
                 this.createdAt = schedule.getCreatedAt();
                 this.modifiedAt = schedule.getLastModifiedAt();
-                this.commentCnt = schedule.getCommentList().size();
+                this.assignedUserCnt = schedule.getAssignedUserList().size();
+                this.commentCnt = scheduleWithCommentCounts.get(schedule) != null ? (int) scheduleWithCommentCounts.get(schedule).longValue() : 0;
             }
         }
 
@@ -150,7 +157,9 @@ public class RespDto {
         private LocalDateTime modifiedAt;
         private String name;
 
-        public ScheduleRespDto(Schedule schedule) {
+        private List<CommentDto> commentList;
+
+        public ScheduleRespDto(Schedule schedule, List<Comment> commentList) {
             this.content = schedule.getContent();
             this.startAt = schedule.getStartAt();
             this.endAt = schedule.getEndAt();
@@ -159,6 +168,29 @@ public class RespDto {
             this.createdAt = schedule.getCreatedAt();
             this.modifiedAt = schedule.getLastModifiedAt();
             this.name = schedule.getUser().getName();
+            this.commentList = commentList.stream().map(CommentDto::new).toList();
+        }
+
+        @NoArgsConstructor
+        @Getter
+        public static class CommentDto {
+
+            private Long id;
+            private String content;
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+            private LocalDateTime createdAt;
+            private String name;
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+            private LocalDateTime modifiedAt;
+
+            public CommentDto(Comment comment) {
+                this.id = comment.getId();
+                this.content = comment.getContent();
+                this.createdAt = comment.getCreatedAt();
+                this.name = comment.getUser() != null ? comment.getUser().getName() : "탈퇴한 유저";
+                this.modifiedAt = comment.getLastModifiedAt();
+            }
+
         }
     }
 

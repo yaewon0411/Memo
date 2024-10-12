@@ -1,6 +1,8 @@
 package com.my.memo.dto.schedule;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.my.memo.domain.schedule.Schedule;
+import com.my.memo.domain.user.User;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -91,5 +93,15 @@ public class ReqDto {
 
         @NotNull(message = "공개 여부를 선택해야 합니다")
         private Boolean isPublic;
+
+        public Schedule toEntity(User user) {
+            return Schedule.builder()
+                    .startAt(this.startAt)
+                    .endAt(this.endAt)
+                    .content(this.content)
+                    .user(user)
+                    .isPublic(this.isPublic)
+                    .build();
+        }
     }
 }

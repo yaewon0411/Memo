@@ -1,5 +1,8 @@
 package com.my.memo.service;
 
+import com.my.memo.domain.comment.Comment;
+import com.my.memo.domain.comment.CommentRepository;
+import com.my.memo.domain.comment.dto.ScheduleCommentCountDto;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.User;
@@ -14,16 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.my.memo.dto.schedule.ReqDto.*;
 import static com.my.memo.dto.schedule.RespDto.*;
 
-/**
- * 일정 관련 서비스 클래스입니다
- * <p>
- * 일정 생성, 수정, 삭제, 조회 등의 비즈니스 로직을 처리합니다
- * 트랜잭션 관리와 예외 처리를 직접 처리하며, 공개 일정에 대한 접근 권한을 확인하는 로직을 포함하고 있습니다
- */
+
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
@@ -31,16 +31,13 @@ public class ScheduleService {
 
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
+    private final CommentRepository commentRepository;
     private final Logger log = LoggerFactory.getLogger(ScheduleService.class);
 
 
-    //TODO 테스트
-    public ScheduleListRespDto findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter) {
+    public PublicScheduleListRespDto findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter) {
 
-        List<Schedule> scheduleList = scheduleRepository.findPublicSchedulesWithFilters(
-                publicScheduleFilter
-        );
-        scheduleRepository.getCommentsBySchedules(scheduleList); //코멘트 초기화
+        List<Schedule> scheduleList = scheduleRepository.findPublicSchedulesWithFilters(publicScheduleFilter);
 
         boolean hasNextPage = false;
 
@@ -49,51 +46,60 @@ public class ScheduleService {
             scheduleList = scheduleList.subList(0, (int) publicScheduleFilter.getLimit().longValue());
         }
 
-        return new ScheduleListRespDto(scheduleList, hasNextPage);
+        Map<Schedule, Long> scheduleWithCommentCounts = commentRepository
+                .countCommentsBySchedules(scheduleList)
+                .stream()
+                .collect(Collectors.toMap(
+                        ScheduleCommentCountDto::getSchedule,
+                        ScheduleCommentCountDto::getCommentCnt
+                ));
+
+        return new PublicScheduleListRespDto(scheduleList, hasNextPage, scheduleWithCommentCounts);
     }
 
 
-    //TODO 고아객체 삭제되는지 테스트
+    // 일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
     public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, HttpServletRequest request) {
 
-        Long userId = (Long) request.getAttribute("userId");
-        log.info("유저 ID: {}", userId);
+        //관리자 검증
+        Long authUserId = (Long) request.getAttribute("userId");
+        log.info("일정 삭제 시도: 관리자 ID {}", authUserId);
 
-        User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
+        userRepository.findById(authUserId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 관리자입니다")
         );
 
-        // 해당 일정 조회
-        Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
+        //해당 일정 조회
+        Schedule schedulePS = scheduleRepository.findScheduleWithUserById(scheduleId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
 
-        // 일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
+        //해당 스케줄 삭제
+        schedulePS.getUser().getScheduleList().remove(schedulePS);
 
-        //TODO 엥 고아객체 됐는데 제거 안됨 뭐임
-        userPS.getScheduleList().remove(schedulePS);
+        //TODO 하이버네이트 버그로 인해 Cascade.PERSIS와 orphanRemoval=true가 같이 쓰일 때만 고아 객체로 인식되어 제거된다함. 명시적 삭제 필요
+        scheduleRepository.delete(schedulePS);
 
         return new ScheduleDeleteRespDto(scheduleId, true);
     }
 
 
+    //일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
     public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId, HttpServletRequest request) {
-        //유저 꺼내기
-        Long userId = (Long) request.getAttribute("userId");
-        log.info("유저 ID: {}", userId);
+        //관리자 검증
+        Long authUserId = (Long) request.getAttribute("userId");
+        log.info("일정 수정 시도: 관리자 ID {}", authUserId);
 
-        userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
+        userRepository.findById(authUserId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 관리자입니다")
         );
 
-        // 해당 일정 조회
+        //해당 일정 조회
         Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
-
-        //일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
 
         // 요청한 필드에 대해 수정
         schedulePS.modify(scheduleModifyReqDto);
@@ -111,7 +117,6 @@ public class ScheduleService {
         );
 
         List<Schedule> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
-        scheduleRepository.getCommentsBySchedules(scheduleList); //코멘트 초기화
 
         boolean hasNextPage = false;
 
@@ -121,27 +126,40 @@ public class ScheduleService {
             scheduleList = scheduleList.subList(0, (int) userScheduleFilter.getLimit().longValue());  // 현재 페이지에 필요한 데이터만 남김
         }
 
+        Map<Schedule, Long> scheduleWithCommentCounts = commentRepository
+                .countCommentsBySchedules(scheduleList)
+                .stream()
+                .collect(Collectors.toMap(
+                        ScheduleCommentCountDto::getSchedule,
+                        ScheduleCommentCountDto::getCommentCnt
+                ));
+
         log.info("유저 전체 일정 조회 완료: 유저 ID {}", userId);
-        return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS);
+        return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS, scheduleWithCommentCounts);
     }
 
 
-    public ScheduleRespDto findUserScheduleById(Long scheduleId, HttpServletRequest request) {
+    public ScheduleRespDto findScheduleById(Long scheduleId, HttpServletRequest request) {
 
         //유저 꺼내기
         Long userId = (Long) request.getAttribute("userId");
+        User userPS = userRepository.findById(userId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
+        );
 
         Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
 
         // 비공개 일정인데 해당 유저의 일정이 아니면 에러
-        if (!schedulePS.isPublic() && !schedulePS.getUser().getId().equals(userId)) {
+        if (!schedulePS.isPublic() && !schedulePS.getUser().equals(userPS)) {
             throw new CustomApiException(HttpStatus.FORBIDDEN.value(), "해당 일정에 접근할 권한이 없습니다");
         }
 
+        List<Comment> commentList = commentRepository.findCommentsWithUserBySchedule(schedulePS);
+
         log.info("선택한 일정 조회 완료: 유저 ID {}, 일정 ID {}", userId, scheduleId);
-        return new ScheduleRespDto(schedulePS);
+        return new ScheduleRespDto(schedulePS, commentList);
     }
 
 
@@ -149,22 +167,13 @@ public class ScheduleService {
     public ScheduleCreateRespDto createSchedule(ScheduleCreateReqDto scheduleCreateReqDto, HttpServletRequest request) {
 
         //유저 정보 꺼내기
-        Long authUserId = (Long) request.getAttribute("userId");
-        log.info("유저 ID: {}", authUserId);
+        Long userId = (Long) request.getAttribute("userId");
 
-        User userPS = userRepository.findById(authUserId).orElseThrow(
+        User userPS = userRepository.findById(userId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
         );
 
-        Schedule schedule = Schedule.builder()
-                .startAt(scheduleCreateReqDto.getStartAt())
-                .endAt(scheduleCreateReqDto.getEndAt())
-                .content(scheduleCreateReqDto.getContent())
-                .user(userPS)
-                .isPublic(scheduleCreateReqDto.getIsPublic())
-                .build();
-
-        Schedule schedulePS = scheduleRepository.save(schedule);
+        Schedule schedulePS = scheduleRepository.save(scheduleCreateReqDto.toEntity(userPS));
 
         log.info("일정 저장 완료 : 일정 ID {}", schedulePS.getId());
         return new ScheduleCreateRespDto(schedulePS);

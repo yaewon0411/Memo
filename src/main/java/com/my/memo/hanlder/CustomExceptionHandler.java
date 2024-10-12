@@ -51,11 +51,6 @@ public class CustomExceptionHandler {
     }
 
 
-//    @ExceptionHandler(CustomValidationException.class)
-//    public ResponseEntity<?> validationException(CustomValidationException e) {
-//        return new ResponseEntity<>(ApiResult.error(HttpStatus.BAD_REQUEST.value(), e.getMessage(), e.getErrorMap()), HttpStatus.BAD_REQUEST);
-//    }
-
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> queryParameterValidationException(ConstraintViolationException e) {
