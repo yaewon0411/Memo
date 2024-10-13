@@ -16,7 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final static Logger log = LoggerFactory.getLogger(WebMvcConfig.class);
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final AuthInterceptor authInterceptor;
 
     @Override

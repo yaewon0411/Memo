@@ -6,7 +6,10 @@ import com.my.memo.domain.user.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,6 +26,8 @@ interface Dao {
 @RequiredArgsConstructor
 public class ScheduleRepositoryImpl implements Dao {
     private final EntityManager em;
+    private final Clock clock;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     //TODO 테스트하기
     @Override
@@ -149,14 +154,16 @@ public class ScheduleRepositoryImpl implements Dao {
     }
 
     private LocalDateTime calculateModifiedTime(String modifiedAt) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        log.info("현재 시각: {}", now);
         return switch (modifiedAt) {
-            case "30m" -> LocalDateTime.now().minusMinutes(30);
-            case "1h" -> LocalDateTime.now().minusHours(1);
-            case "1d" -> LocalDateTime.now().minusDays(1);
-            case "1w" -> LocalDateTime.now().minusWeeks(1);
-            case "1m" -> LocalDateTime.now().minusMonths(1);
-            case "3m" -> LocalDateTime.now().minusMonths(3);
-            case "6m" -> LocalDateTime.now().minusMonths(6);
+            case "30m" -> now.minusMinutes(30);
+            case "1h" -> now.minusHours(1);
+            case "1d" -> now.minusDays(1);
+            case "1w" -> now.minusWeeks(1);
+            case "1m" -> now.minusMonths(1);
+            case "3m" -> now.minusMonths(3);
+            case "6m" -> now.minusMonths(6);
             default -> null;
         };
     }
