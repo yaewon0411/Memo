@@ -1,8 +1,11 @@
 package com.my.memo.dto.scheduleUser;
 
-import com.my.memo.domain.scheduleUser.ScheduleUser;
+import com.my.memo.domain.schedule.Schedule;
+import com.my.memo.domain.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 public class RespDto {
 
@@ -10,11 +13,23 @@ public class RespDto {
     @Getter
     public static class UserAssignRespDto {
         private Long scheduleId;
-        private String name;
 
-        public UserAssignRespDto(ScheduleUser scheduleUser) {
-            this.scheduleId = scheduleUser.getSchedule().getId();
-            this.name = scheduleUser.getUser().getName();
+        private List<UserDto> userDtoList;
+
+        public UserAssignRespDto(Schedule schedule, List<User> assignedUserList) {
+            this.scheduleId = schedule.getId();
+            this.userDtoList = assignedUserList.stream().map(UserDto::new).toList();
+        }
+
+        @NoArgsConstructor
+        @Getter
+        public static class UserDto {
+            private String name;
+            private Long id;
+            public UserDto(User user) {
+                this.name = user.getName();
+                this.id = user.getId();
+            }
         }
     }
 }

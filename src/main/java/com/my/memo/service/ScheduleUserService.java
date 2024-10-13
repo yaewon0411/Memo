@@ -15,6 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.my.memo.dto.scheduleUser.ReqDto.UserAssignReqDto;
 import static com.my.memo.dto.scheduleUser.RespDto.UserAssignRespDto;
 
@@ -32,23 +35,28 @@ public class ScheduleUserService {
 
     @Transactional
     @AuthenticateUser
-    public UserAssignRespDto assignUserToSchedule(UserAssignReqDto userAssignReqDto, User user) {
+    public UserAssignRespDto assignUserToSchedule(Long scheduleId, UserAssignReqDto userAssignReqDto, User user) {
 
-        Schedule schedulePS = scheduleRepository.findById(userAssignReqDto.getScheduleId()).orElseThrow(
+        Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
 
         validateScheduleUserLimit(schedulePS);
+        List<User> assignedUserList = new ArrayList<>();
 
-        User userPS = userRepository.findById(userAssignReqDto.getUserId()).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 유저는 존재하지 않습니다")
+        userAssignReqDto.getUserList().forEach(
+                userDto -> {
+                    User userPS = userRepository.findById(userDto.getUserId()).orElseThrow(
+                            () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 유저는 존재하지 않습니다")
+                    );
+                    assignedUserList.add(userPS);
+                    scheduleUserRepository.save(new ScheduleUser(userPS, schedulePS));
+                }
         );
 
-        ScheduleUser scheduleUserPS = scheduleUserRepository.save(new ScheduleUser(userPS, schedulePS));
+        log.info("유저 ID {}: 일정 ID {}에 유저 ID {}를 할당", user.getId(), schedulePS.getId(), userAssignReqDto.getUserList());
 
-        log.info("유저 ID {}: 일정 ID {}에 유저 ID {}를 할당", user.getId(), schedulePS.getId(), userPS.getId());
-
-        return new UserAssignRespDto(scheduleUserPS);
+        return new UserAssignRespDto(schedulePS, assignedUserList);
     }
 
     //최대 인원으로 배정되었는지 검사

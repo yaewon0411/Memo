@@ -61,10 +61,11 @@ public class ScheduleController {
 
     //유저 스케줄에 할당
     @RequireAuth(role = Role.USER)
-    @PostMapping("/s/schedules/{scheduleId}/users/{userId}")
-    public ResponseEntity<ApiResult<UserAssignRespDto>> assignUserToSchedule(@RequestBody @Valid UserAssignReqDto userAssignReqDto,
+    @PostMapping("/s/schedules/{scheduleId}/users")
+    public ResponseEntity<ApiResult<UserAssignRespDto>> assignUserToSchedule(@PathVariable(name = "scheduleId") Long scheduleId,
+                                                                             @RequestBody @Valid UserAssignReqDto userAssignReqDto,
                                                                              User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleUserService.assignUserToSchedule(userAssignReqDto, user)), HttpStatus.OK);
+        return new ResponseEntity<>(ApiResult.success(scheduleUserService.assignUserToSchedule(scheduleId, userAssignReqDto, user)), HttpStatus.OK);
     }
 
 
