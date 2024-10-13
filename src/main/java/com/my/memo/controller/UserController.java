@@ -2,9 +2,9 @@ package com.my.memo.controller;
 
 import com.my.memo.config.jwt.RequireAuth;
 import com.my.memo.domain.user.Role;
+import com.my.memo.domain.user.User;
 import com.my.memo.service.UserService;
 import com.my.memo.util.api.ApiResult;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,23 +25,23 @@ public class UserController {
 
     @RequireAuth(role = Role.USER)
     @DeleteMapping("/s/users")
-    public ResponseEntity<ApiResult<UserDeleteRespDto>> deleteUser(HttpServletRequest request) {
-        return new ResponseEntity<>(ApiResult.success(userService.deleteUser(request)), HttpStatus.OK);
+    public ResponseEntity<ApiResult<UserDeleteRespDto>> deleteUser(User user) {
+        return new ResponseEntity<>(ApiResult.success(userService.deleteUser(user)), HttpStatus.OK);
     }
 
 
     @RequireAuth(role = Role.USER)
     @GetMapping("/s/users")
-    public ResponseEntity<ApiResult<UserRespDto>> getUserInfo(HttpServletRequest request) {
-        return new ResponseEntity<>(ApiResult.success(userService.getUserInfo(request)), HttpStatus.OK);
+    public ResponseEntity<ApiResult<UserRespDto>> getUserInfo(User user) {
+        return new ResponseEntity<>(ApiResult.success(userService.getUserInfo(user)), HttpStatus.OK);
     }
 
 
     @RequireAuth(role = Role.USER)
     @PatchMapping("/s/users")
     public ResponseEntity<ApiResult<UserModifyRespDto>> updateUser(@RequestBody @Valid UserModifyReqDto userModifyReqDto,
-                                                                   HttpServletRequest request) {
-        return new ResponseEntity<>(ApiResult.success(userService.updateUser(userModifyReqDto, request)), HttpStatus.OK);
+                                                                   User user) {
+        return new ResponseEntity<>(ApiResult.success(userService.updateUser(userModifyReqDto, user)), HttpStatus.OK);
     }
 
 

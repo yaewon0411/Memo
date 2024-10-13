@@ -1,11 +1,11 @@
 package com.my.memo.service;
 
+import com.my.memo.aop.AuthenticateUser;
 import com.my.memo.config.jwt.JwtProvider;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.CustomPasswordUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -34,54 +34,32 @@ public class UserService {
 
 
     @Transactional
-    public UserDeleteRespDto deleteUser(HttpServletRequest request) {
-        //유저 꺼내기
-        Long userId = (Long) request.getAttribute("userId");
-        log.info("정보 조회 유저 ID: {}", userId);
-
-        User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
-        );
-
-        userRepository.delete(userPS);
-
-        return new UserDeleteRespDto(true, userId);
+    @AuthenticateUser
+    public UserDeleteRespDto deleteUser(User user) {
+        userRepository.delete(user);
+        return new UserDeleteRespDto(true, user.getId());
     }
 
 
-    public UserRespDto getUserInfo(HttpServletRequest request) {
-        //유저 꺼내기
-        Long userId = (Long) request.getAttribute("userId");
-        log.info("정보 조회 유저 ID: {}", userId);
-
-        User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
-        );
-
-        return new UserRespDto(userPS);
+    @AuthenticateUser
+    public UserRespDto getUserInfo(User user) {
+        return new UserRespDto(user);
     }
 
 
     @Transactional
-    public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, HttpServletRequest request) {
-
-        //유저 꺼내기
-        Long userId = (Long) request.getAttribute("userId");
-        log.info("정보 수정 시도 유저 ID: {}", userId);
-
-        User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
-        );
+    @AuthenticateUser
+    public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, User user) {
 
         //수정 요청한 이메일이 사용중인 이메일인지 검사
-        if (userModifyReqDto.getEmail() != null && !userPS.getEmail().equals(userModifyReqDto.getEmail())) {
+        if (userModifyReqDto.getEmail() != null && !user.getEmail().equals(userModifyReqDto.getEmail())) {
             if (userRepository.existsUserByEmail(userModifyReqDto.getEmail()))
                 throw new CustomApiException(HttpStatus.CONFLICT.value(), "이미 사용 중인 이메일입니다");
         }
 
-        userPS.modify(userModifyReqDto);
+        user.modify(userModifyReqDto);
 
-        return new UserModifyRespDto(userPS);
+        return new UserModifyRespDto(user);
     }
 
 
