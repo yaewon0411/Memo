@@ -17,4 +17,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select distinct u from User u left join fetch u.scheduleList s where u.id = :userId ")
     Optional<User> findUserWithSchedulesById(@Param(value = "userId") Long userId);
+
 }

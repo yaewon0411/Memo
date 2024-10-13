@@ -1,5 +1,6 @@
 package com.my.memo.service;
 
+import com.my.memo.aop.AuthenticateUser;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.Schedule;
@@ -53,15 +54,10 @@ public class ScheduleService {
 
     // 일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
-    public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, HttpServletRequest request) {
+    @AuthenticateUser
+    public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, User user) {
 
-        //관리자 검증
-        Long authUserId = (Long) request.getAttribute("userId");
-        log.info("일정 삭제 시도: 관리자 ID {}", authUserId);
-
-        userRepository.findById(authUserId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 관리자입니다")
-        );
+        log.info("일정 삭제 시도: 관리자 ID {}", user.getId());
 
         //해당 일정 조회
         Schedule schedulePS = scheduleRepository.findScheduleWithUserById(scheduleId).orElseThrow(
@@ -80,14 +76,10 @@ public class ScheduleService {
 
     //일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
-    public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId, HttpServletRequest request) {
-        //관리자 검증
-        Long authUserId = (Long) request.getAttribute("userId");
-        log.info("일정 수정 시도: 관리자 ID {}", authUserId);
+    @AuthenticateUser
+    public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId, User user) {
 
-        userRepository.findById(authUserId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 관리자입니다")
-        );
+        log.info("일정 수정 시도: 관리자 ID {}", user.getId());
 
         //해당 일정 조회
         Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
@@ -100,16 +92,10 @@ public class ScheduleService {
         return new ScheduleModifyRespDto(schedulePS);
     }
 
+    @AuthenticateUser
+    public UserScheduleListRespDto findUserSchedules(UserScheduleFilter userScheduleFilter, User user) {
 
-    public UserScheduleListRespDto findUserSchedules(UserScheduleFilter userScheduleFilter, HttpServletRequest request) {
-        //유저 꺼내기
-        Long userId = (Long) request.getAttribute("userId");
-
-        User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
-        );
-
-        List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
+        List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findUserSchedulesWithFilters(user, userScheduleFilter);
 
         boolean hasNextPage = false;
 
@@ -119,50 +105,50 @@ public class ScheduleService {
             scheduleList = scheduleList.subList(0, (int) userScheduleFilter.getLimit().longValue());  // 현재 페이지에 필요한 데이터만 남김
         }
 
-        log.info("유저 전체 일정 조회 완료: 유저 ID {}", userId);
-        return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS);
+        log.info("유저 전체 일정 조회 완료: 유저 ID {}", user.getId());
+        return new UserScheduleListRespDto(scheduleList, hasNextPage, user);
     }
 
-
-    public ScheduleRespDto findScheduleById(Long scheduleId, HttpServletRequest request) {
-
-        //유저 꺼내기
-        Long userId = (Long) request.getAttribute("userId");
-        User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
-        );
+    @AuthenticateUser
+    public ScheduleRespDto findScheduleById(Long scheduleId, User user) {
 
         Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
 
         // 비공개 일정인데 해당 유저의 일정이 아니면 에러
-        if (!schedulePS.isPublic() && !schedulePS.getUser().equals(userPS)) {
+        if (!schedulePS.isPublic() && !schedulePS.getUser().equals(user)) {
             throw new CustomApiException(HttpStatus.FORBIDDEN.value(), "해당 일정에 접근할 권한이 없습니다");
         }
 
         List<Comment> commentList = commentRepository.findCommentsWithUserBySchedule(schedulePS);
         List<ScheduleUser> assignedUserList = scheduleUserRepository.findScheduleUserBySchedule(schedulePS);
 
-        log.info("선택한 일정 조회 완료: 유저 ID {}, 일정 ID {}", userId, scheduleId);
+        log.info("선택한 일정 조회 완료: 유저 ID {}, 일정 ID {}", user.getId(), scheduleId);
         return new ScheduleRespDto(schedulePS, commentList, assignedUserList);
     }
 
 
     @Transactional
-    public ScheduleCreateRespDto createSchedule(ScheduleCreateReqDto scheduleCreateReqDto, HttpServletRequest request) {
+    @AuthenticateUser
+    public ScheduleCreateRespDto createSchedule(ScheduleCreateReqDto scheduleCreateReqDto, User user) {
 
-        //유저 정보 꺼내기
-        Long userId = (Long) request.getAttribute("userId");
+        userRepository.findUserWithSchedulesById(user.getId());
 
-        User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
-        );
+        Schedule schedulePS = scheduleRepository.save(scheduleCreateReqDto.toEntity(user));
 
-        Schedule schedulePS = scheduleRepository.save(scheduleCreateReqDto.toEntity(userPS));
-
-        log.info("일정 저장 완료 : 일정 ID {}", schedulePS.getId());
+        log.info("일정 저장 완료 : 일정 ID {}, 유저 ID {}", schedulePS.getId(), user.getId());
         return new ScheduleCreateRespDto(schedulePS);
+    }
+
+    private User validateAndGetUser(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "인증 정보가 없습니다. 재로그인 해주세요");
+        }
+
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다"));
     }
 
 
