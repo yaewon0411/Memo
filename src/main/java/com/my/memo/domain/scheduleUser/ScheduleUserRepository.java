@@ -19,8 +19,9 @@ public interface ScheduleUserRepository extends JpaRepository<ScheduleUser, Long
     @Query("select su from ScheduleUser su left join fetch su.user u where su.schedule = :schedule")
     List<ScheduleUser> findScheduleUserBySchedule(@Param(value = "schedule") Schedule schedule);
 
-    @Modifying
-    int deleteByUser(User user);
+    @Modifying(clearAutomatically = true)
+    @Query("delete from ScheduleUser su where su.user = :user or su.schedule in :scheduleList")
+    int deleteByUser(@Param(value = "user") User user, @Param(value = "scheduleList") List<Schedule> scheduleList);
 
     @Modifying(clearAutomatically = true)
     @Query("delete from ScheduleUser su where su.schedule = :schedule and su.user.id in :userIdList")

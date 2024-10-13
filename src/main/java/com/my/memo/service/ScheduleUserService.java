@@ -1,6 +1,5 @@
 package com.my.memo.service;
 
-import com.my.memo.aop.AuthenticateUser;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.scheduleUser.ScheduleUser;
@@ -9,6 +8,7 @@ import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +36,13 @@ public class ScheduleUserService {
     private final UserRepository userRepository;
 
     @Transactional
-    @AuthenticateUser
-    public AssignedUserDeleteRespDto deleteAssignedUser(Long scheduleId, AssignedUserDeleteReqDto assignedUserDeleteReqDto, User user) {
+    public AssignedUserDeleteRespDto deleteAssignedUser(Long scheduleId, AssignedUserDeleteReqDto assignedUserDeleteReqDto, HttpServletRequest request) {
+
+        User userPS = validateAndGetUser(request);
 
         Schedule schedulePS = validateAndGetSchedule(scheduleId);
 
-        if (!user.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(user)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(userPS)) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 일정에 접근할 권한이 없습니다");
         }
 
@@ -60,12 +61,13 @@ public class ScheduleUserService {
     }
 
     @Transactional
-    @AuthenticateUser
-    public UserAssignRespDto assignUserToSchedule(Long scheduleId, UserAssignReqDto userAssignReqDto, User user) {
+    public UserAssignRespDto assignUserToSchedule(Long scheduleId, UserAssignReqDto userAssignReqDto, HttpServletRequest request) {
+
+        User userPS = validateAndGetUser(request);
 
         Schedule schedulePS = validateAndGetSchedule(scheduleId);
 
-        if (!user.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(user)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(userPS)) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 일정에 접근할 권한이 없습니다");
         }
 
@@ -84,16 +86,16 @@ public class ScheduleUserService {
         }
 
         //유저 목록 조회
-        List<User> userToAssign = userRepository.findAllById(userIdListToAssign);
-        if (userToAssign.size() != userIdListToAssign.size())
+        List<User> userListToAssign = userRepository.findAllById(userIdListToAssign);
+        if (userListToAssign.size() != userIdListToAssign.size())
             throw new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저가 포함되어 있습니다");
 
         //유저 할당
-        userToAssign.forEach(userPS -> scheduleUserRepository.save(new ScheduleUser(userPS, schedulePS)));
+        userListToAssign.forEach(userToAssign -> scheduleUserRepository.save(new ScheduleUser(userToAssign, schedulePS)));
 
-        log.info("유저 ID {}: 일정 ID {}에 유저 ID {}를 할당", user.getId(), schedulePS.getId(), userIdListToAssign);
+        log.info("유저 ID {}: 일정 ID {}에 유저 ID {}를 할당", userPS.getId(), schedulePS.getId(), userIdListToAssign);
 
-        return new UserAssignRespDto(schedulePS, userToAssign);
+        return new UserAssignRespDto(schedulePS, userListToAssign);
     }
 
     //최대 인원으로 배정되었는지 검사
@@ -108,6 +110,19 @@ public class ScheduleUserService {
         return scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
+    }
+
+    private User validateAndGetUser(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+
+        if (userId == null) {
+            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
+        }
+        return userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
+                    return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
+                });
     }
 
 

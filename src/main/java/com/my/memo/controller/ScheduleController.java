@@ -2,11 +2,11 @@ package com.my.memo.controller;
 
 import com.my.memo.config.jwt.RequireAuth;
 import com.my.memo.domain.user.Role;
-import com.my.memo.domain.user.User;
 import com.my.memo.service.CommentService;
 import com.my.memo.service.ScheduleService;
 import com.my.memo.service.ScheduleUserService;
 import com.my.memo.util.api.ApiResult;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -40,16 +40,16 @@ public class ScheduleController {
     @DeleteMapping("/s/schedules/{scheduleId}/users")
     public ResponseEntity<ApiResult<AssignedUserDeleteRespDto>> deleteAssignedUser(@PathVariable(name = "scheduleId") Long scheduleId,
                                                                                    @RequestBody @Valid AssignedUserDeleteReqDto assignedUserDeleteReqDto,
-                                                                                   User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleUserService.deleteAssignedUser(scheduleId, assignedUserDeleteReqDto, user)), HttpStatus.OK);
+                                                                                   HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(scheduleUserService.deleteAssignedUser(scheduleId, assignedUserDeleteReqDto, request)), HttpStatus.OK);
     }
 
     @RequireAuth(role = Role.USER)
     @DeleteMapping("/s/schedules/{scheduleId}/comments/{commentId}")
     public ResponseEntity<ApiResult<CommentDeleteRespDto>> deleteComment(@PathVariable(name = "scheduleId") Long scheduleId,
                                                                          @PathVariable(name = "commentId") Long commentId,
-                                                                         User user) {
-        return new ResponseEntity<>(ApiResult.success(commentService.deleteComment(scheduleId, commentId, user)), HttpStatus.OK);
+                                                                         HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(commentService.deleteComment(scheduleId, commentId, request)), HttpStatus.OK);
     }
 
     @RequireAuth(role = Role.USER)
@@ -57,16 +57,16 @@ public class ScheduleController {
     public ResponseEntity<ApiResult<CommentModifyRespDto>> updateComment(@PathVariable(name = "scheduleId") Long scheduleId,
                                                                          @PathVariable(name = "commentId") Long commentId,
                                                                          @RequestBody @Valid CommentModifyReqDto commentModifyReqDto,
-                                                                         User user) {
-        return new ResponseEntity<>(ApiResult.success(commentService.updateComment(scheduleId, commentId, commentModifyReqDto, user)), HttpStatus.OK);
+                                                                         HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(commentService.updateComment(scheduleId, commentId, commentModifyReqDto, request)), HttpStatus.OK);
     }
 
     @RequireAuth(role = Role.USER)
     @PostMapping("/s/schedules/{scheduleId}/comments")
     public ResponseEntity<ApiResult<CommentCreateRespDto>> createComment(@PathVariable(name = "scheduleId") Long scheduleId,
                                                                          @RequestBody @Valid CommentCreateReqDto commentCreateReqDto,
-                                                                         User user) {
-        return new ResponseEntity<>(ApiResult.success(commentService.createComment(scheduleId, commentCreateReqDto, user)), HttpStatus.CREATED);
+                                                                         HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(commentService.createComment(scheduleId, commentCreateReqDto, request)), HttpStatus.CREATED);
     }
 
 
@@ -75,15 +75,15 @@ public class ScheduleController {
     @PostMapping("/s/schedules/{scheduleId}/users")
     public ResponseEntity<ApiResult<UserAssignRespDto>> assignUserToSchedule(@PathVariable(name = "scheduleId") Long scheduleId,
                                                                              @RequestBody @Valid UserAssignReqDto userAssignReqDto,
-                                                                             User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleUserService.assignUserToSchedule(scheduleId, userAssignReqDto, user)), HttpStatus.OK);
+                                                                             HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(scheduleUserService.assignUserToSchedule(scheduleId, userAssignReqDto, request)), HttpStatus.OK);
     }
 
 
     @RequireAuth(role = Role.ADMIN)
     @DeleteMapping("/s/schedules/{scheduleId}")
-    public ResponseEntity<ApiResult<ScheduleDeleteRespDto>> deleteSchedule(@PathVariable(name = "scheduleId") Long scheduleId, User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleService.deleteSchedule(scheduleId, user)), HttpStatus.OK);
+    public ResponseEntity<ApiResult<ScheduleDeleteRespDto>> deleteSchedule(@PathVariable(name = "scheduleId") Long scheduleId, HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(scheduleService.deleteSchedule(scheduleId, request)), HttpStatus.OK);
     }
 
 
@@ -91,8 +91,8 @@ public class ScheduleController {
     @PatchMapping("/s/schedules/{scheduleId}")
     public ResponseEntity<ApiResult<ScheduleModifyRespDto>> updateSchedule(@PathVariable(name = "scheduleId") Long scheduleId,
                                                                            @RequestBody @Validated ScheduleModifyReqDto scheduleModifyReqDto,
-                                                                           User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleService.updateSchedule(scheduleModifyReqDto, scheduleId, user)), HttpStatus.OK);
+                                                                           HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(scheduleService.updateSchedule(scheduleModifyReqDto, scheduleId, request)), HttpStatus.OK);
     }
 
 
@@ -104,9 +104,9 @@ public class ScheduleController {
 
     @RequireAuth(role = Role.USER)
     @GetMapping("/s/schedules")
-    public ResponseEntity<ApiResult<UserScheduleListRespDto>> findUserSchedules(@Valid UserScheduleFilter userScheduleFilter,
-                                                                                User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleService.findUserSchedules(userScheduleFilter, user)), HttpStatus.OK);
+    public ResponseEntity<ApiResult<UserScheduleListRespDto>> findUserSchedules(@Valid UserScheduleFilter requestScheduleFilter,
+                                                                                HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(scheduleService.findUserSchedules(requestScheduleFilter, request)), HttpStatus.OK);
     }
 
 
@@ -115,15 +115,15 @@ public class ScheduleController {
     public ResponseEntity<ApiResult<ScheduleRespDto>> findScheduleById(@PathVariable(name = "scheduleId") Long scheduleId,
                                                                        @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
                                                                        @RequestParam(name = "limit", defaultValue = "10") @Min(1) int limit,
-                                                                       User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleService.findScheduleById(scheduleId, page, limit, user)), HttpStatus.OK);
+                                                                       HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(scheduleService.findScheduleById(scheduleId, page, limit, request)), HttpStatus.OK);
     }
 
 
     @RequireAuth(role = Role.USER)
     @PostMapping("/s/schedules")
     public ResponseEntity<ApiResult<ScheduleCreateRespDto>> createSchedule(@RequestBody @Valid ScheduleCreateReqDto scheduleCreateReqDto,
-                                                                           User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleService.createSchedule(scheduleCreateReqDto, user)), HttpStatus.CREATED);
+                                                                           HttpServletRequest request) {
+        return new ResponseEntity<>(ApiResult.success(scheduleService.createSchedule(scheduleCreateReqDto, request)), HttpStatus.CREATED);
     }
 }

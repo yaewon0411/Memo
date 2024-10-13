@@ -1,13 +1,14 @@
 package com.my.memo.service;
 
-import com.my.memo.aop.AuthenticateUser;
 import com.my.memo.config.jwt.JwtProvider;
 import com.my.memo.domain.comment.CommentRepository;
+import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.CustomPasswordUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -34,43 +35,50 @@ public class UserService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final ScheduleUserRepository scheduleUserRepository;
+    private final ScheduleRepository scheduleRepository;
     private final JwtProvider jwtProvider;
 
 
+    //TODO 다시 확인
     @Transactional
-    @AuthenticateUser
-    public UserDeleteRespDto deleteUser(User user) {
+    public UserDeleteRespDto deleteUser(HttpServletRequest request) {
 
-        int deletedAssignedCnt = scheduleUserRepository.deleteByUser(user);
-        log.info("해당 유저 ID {} 배정 기록 삭제: 삭제된 개수 {}", user.getId(), deletedAssignedCnt);
+        User userPS = validateAndGetuser(request);
+        userRepository.findUserWithSchedulesById(userPS.getId());
 
-        int deletedCommentCnt = commentRepository.deleteByUser(user);
-        log.info("해당 유저 ID {} 코멘트 삭제: 삭제된 개수 {}", user.getId(), deletedCommentCnt);
+        int deletedAssignedCnt = scheduleUserRepository.deleteByUser(userPS, userPS.getScheduleList());
+        log.info("해당 유저 ID {} 배정 기록 삭제: 삭제된 개수 {}", userPS.getId(), deletedAssignedCnt);
 
-        userRepository.delete(user);
-        return new UserDeleteRespDto(true, user.getId());
+        int deletedCommentCnt = commentRepository.deleteByUser(userPS);
+        log.info("해당 유저 ID {} 코멘트 삭제: 삭제된 개수 {}", userPS.getId(), deletedCommentCnt);
+
+        int deletedScheduleCnt = scheduleRepository.deleteByUser(userPS);
+        log.info("해당 유저 ID {} 일정 삭제: 삭제된 개수 {}", userPS.getId(), deletedScheduleCnt);
+
+        userRepository.delete(userPS);
+        return new UserDeleteRespDto(true, userPS.getId());
+    }
+
+    public UserRespDto getUserInfo(HttpServletRequest request) {
+        User userPS = validateAndGetuser(request);
+        return new UserRespDto(userPS);
     }
 
 
-    @AuthenticateUser
-    public UserRespDto getUserInfo(User user) {
-        return new UserRespDto(user);
-    }
-
-
     @Transactional
-    @AuthenticateUser
-    public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, User user) {
+    public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, HttpServletRequest request) {
+
+        User userPS = validateAndGetuser(request);
 
         //수정 요청한 이메일이 사용중인 이메일인지 검사
-        if (userModifyReqDto.getEmail() != null && !user.getEmail().equals(userModifyReqDto.getEmail())) {
+        if (userModifyReqDto.getEmail() != null && !userPS.getEmail().equals(userModifyReqDto.getEmail())) {
             if (userRepository.existsUserByEmail(userModifyReqDto.getEmail()))
                 throw new CustomApiException(HttpStatus.CONFLICT.value(), "이미 사용 중인 이메일입니다");
         }
 
-        user.modify(userModifyReqDto);
+        userPS.modify(userModifyReqDto);
 
-        return new UserModifyRespDto(user);
+        return new UserModifyRespDto(userPS);
     }
 
 
@@ -109,6 +117,18 @@ public class UserService {
         log.info("로그인 성공: 유저 ID {}", userPS.getId());
 
         return new LoginRespDto(userPS);
+    }
+
+    private User validateAndGetuser(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
+        }
+        return userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
+                    return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
+                });
     }
 
 

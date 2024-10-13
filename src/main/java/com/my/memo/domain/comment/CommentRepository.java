@@ -16,6 +16,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findCommentsWithUserBySchedule(Schedule schedule, PageRequest pageRequest);
 
     @Modifying
+    @Query("delete from Comment c where c.user = :user")
     int deleteByUser(User user);
 
     @Modifying
