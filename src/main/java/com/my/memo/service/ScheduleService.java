@@ -67,9 +67,7 @@ public class ScheduleService {
         log.info("일정 삭제 시도: 관리자 ID {}", user.getId());
 
         //해당 일정 조회
-        Schedule schedulePS = scheduleRepository.findScheduleWithUserById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
+        Schedule schedulePS = validateAndGetSchedule(scheduleId);
 
         //코멘트 삭제
         int deletedCommentCnt = commentRepository.deleteBySchedule(schedulePS);
@@ -97,9 +95,7 @@ public class ScheduleService {
         log.info("일정 수정 시도: 관리자 ID {}", user.getId());
 
         //해당 일정 조회
-        Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
+        Schedule schedulePS = validateAndGetSchedule(scheduleId);
 
         // 요청한 필드에 대해 수정
         schedulePS.modify(scheduleModifyReqDto);
@@ -128,9 +124,7 @@ public class ScheduleService {
     @AuthenticateUser
     public ScheduleRespDto findScheduleById(Long scheduleId, int page, int limit, User user) {
 
-        Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
+        Schedule schedulePS = validateAndGetSchedule(scheduleId);
 
         if (!schedulePS.isPublic() && !user.getRole().equals(Role.ADMIN)) {
             if (!schedulePS.getUser().equals(user)) {
@@ -161,6 +155,12 @@ public class ScheduleService {
 
         log.info("일정 저장 완료 : 일정 ID {}, 유저 ID {}", schedulePS.getId(), user.getId());
         return new ScheduleCreateRespDto(schedulePS);
+    }
+
+    private Schedule validateAndGetSchedule(Long scheduleId) {
+        return scheduleRepository.findById(scheduleId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
+        );
     }
 
 

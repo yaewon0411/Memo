@@ -39,9 +39,7 @@ public class ScheduleUserService {
     @AuthenticateUser
     public AssignedUserDeleteRespDto deleteAssignedUser(Long scheduleId, AssignedUserDeleteReqDto assignedUserDeleteReqDto, User user) {
 
-        Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
+        Schedule schedulePS = validateAndGetSchedule(scheduleId);
 
         if (!user.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(user)) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 일정에 접근할 권한이 없습니다");
@@ -65,9 +63,7 @@ public class ScheduleUserService {
     @AuthenticateUser
     public UserAssignRespDto assignUserToSchedule(Long scheduleId, UserAssignReqDto userAssignReqDto, User user) {
 
-        Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
+        Schedule schedulePS = validateAndGetSchedule(scheduleId);
 
         if (!user.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(user)) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 일정에 접근할 권한이 없습니다");
@@ -106,6 +102,12 @@ public class ScheduleUserService {
 
         if (currentAssignUserCnt + newAssignUserCnt > 5)
             throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "해당 일정에는 더 이상 유저를 배정할 수 없습니다");
+    }
+
+    private Schedule validateAndGetSchedule(Long scheduleId) {
+        return scheduleRepository.findById(scheduleId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
+        );
     }
 
 
