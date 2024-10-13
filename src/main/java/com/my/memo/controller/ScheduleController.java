@@ -19,7 +19,9 @@ import static com.my.memo.dto.comment.ReqDto.CommentModifyReqDto;
 import static com.my.memo.dto.comment.RespDto.*;
 import static com.my.memo.dto.schedule.ReqDto.*;
 import static com.my.memo.dto.schedule.RespDto.*;
+import static com.my.memo.dto.scheduleUser.ReqDto.AssignedUserDeleteReqDto;
 import static com.my.memo.dto.scheduleUser.ReqDto.UserAssignReqDto;
+import static com.my.memo.dto.scheduleUser.RespDto.AssignedUserDeleteRespDto;
 import static com.my.memo.dto.scheduleUser.RespDto.UserAssignRespDto;
 
 
@@ -32,6 +34,14 @@ public class ScheduleController {
     private final ScheduleService scheduleService;
     private final ScheduleUserService scheduleUserService;
     private final CommentService commentService;
+
+    @RequireAuth(role = Role.USER)
+    @DeleteMapping("/s/schedules/{scheduleId}/users")
+    public ResponseEntity<ApiResult<AssignedUserDeleteRespDto>> deleteAssignedUser(@PathVariable(name = "scheduleId") Long scheduleId,
+                                                                                   @RequestBody @Valid AssignedUserDeleteReqDto assignedUserDeleteReqDto,
+                                                                                   User user) {
+        return new ResponseEntity<>(ApiResult.success(scheduleUserService.deleteAssignedUser(scheduleId, assignedUserDeleteReqDto, user)), HttpStatus.OK);
+    }
 
     @RequireAuth(role = Role.USER)
     @DeleteMapping("/s/schedules/{scheduleId}/comments/{commentId}")
