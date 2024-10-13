@@ -5,6 +5,7 @@ import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto;
+import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
@@ -141,10 +142,10 @@ public class ScheduleService {
         }
 
         List<Comment> commentList = commentRepository.findCommentsWithUserBySchedule(schedulePS);
-
+        List<ScheduleUser> assignedUserList = scheduleUserRepository.findScheduleUserBySchedule(schedulePS);
 
         log.info("선택한 일정 조회 완료: 유저 ID {}, 일정 ID {}", userId, scheduleId);
-        return new ScheduleRespDto(schedulePS, commentList);
+        return new ScheduleRespDto(schedulePS, commentList, assignedUserList);
     }
 
 

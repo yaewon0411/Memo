@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto;
+import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -158,8 +159,9 @@ public class RespDto {
         private String name;
 
         private List<CommentDto> commentList;
+        private List<AssignedUserDto> assignedUserList;
 
-        public ScheduleRespDto(Schedule schedule, List<Comment> commentList) {
+        public ScheduleRespDto(Schedule schedule, List<Comment> commentList, List<ScheduleUser> assignedUserList) {
             this.content = schedule.getContent();
             this.startAt = schedule.getStartAt();
             this.endAt = schedule.getEndAt();
@@ -169,6 +171,19 @@ public class RespDto {
             this.modifiedAt = schedule.getLastModifiedAt();
             this.name = schedule.getUser().getName();
             this.commentList = commentList.stream().map(CommentDto::new).toList();
+            this.assignedUserList = assignedUserList.stream().map(AssignedUserDto::new).toList();
+        }
+
+        @NoArgsConstructor
+        @Getter
+        public static class AssignedUserDto {
+            private Long id;
+            private String name;
+
+            public AssignedUserDto(ScheduleUser scheduleUser) {
+                this.id = scheduleUser.getUser().getId();
+                this.name = scheduleUser.getUser().getName();
+            }
         }
 
         @NoArgsConstructor
