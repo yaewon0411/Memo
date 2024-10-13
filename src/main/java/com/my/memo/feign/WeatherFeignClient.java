@@ -8,7 +8,6 @@ import java.util.List;
 
 @FeignClient(name = "weatherFeignClient", url = "https://f-api.github.io/f-api/weather.json")
 public interface WeatherFeignClient {
-
     @GetMapping
     List<DateWeatherDto> getDateWeatherInfo();
 }

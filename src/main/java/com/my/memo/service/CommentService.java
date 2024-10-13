@@ -7,7 +7,6 @@ import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
-import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -26,7 +25,6 @@ import static com.my.memo.dto.comment.RespDto.*;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -37,9 +35,7 @@ public class CommentService {
     public CommentCreateRespDto createComment(Long scheduleId, CommentCreateReqDto commentReqDto, User user) {
 
         //일정 찾기
-        Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
+        Schedule schedulePS = validateAndGetSchedule(scheduleId);
 
         //코멘트 저장
         Comment commentPS = commentRepository.save(commentReqDto.toEntity(user, schedulePS));
@@ -53,13 +49,9 @@ public class CommentService {
     public CommentModifyRespDto updateComment(Long scheduleId, Long commentId, CommentModifyReqDto commentModifyReqDto, User user) {
 
         //일정 찾기
-        scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
+        validateAndGetSchedule(scheduleId);
 
-        Comment commentPS = commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 댓글은 존재하지 않습니다")
-        );
+        Comment commentPS = validateAndGetComment(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
         if (!user.getRole().equals(Role.ADMIN) && !commentPS.getUser().equals(user)) {
@@ -74,18 +66,14 @@ public class CommentService {
         return new CommentModifyRespDto(commentPS);
     }
 
-    //TODO 댓글 삭제
+    //댓글 삭제
     @Transactional
     @AuthenticateUser
     public CommentDeleteRespDto deleteComment(Long scheduleId, Long commentId, User user) {
 
-        scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
+        validateAndGetSchedule(scheduleId);
 
-        Comment commentPS = commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 댓글은 존재하지 않습니다")
-        );
+        Comment commentPS = validateAndGetComment(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
         if (!user.getRole().equals(Role.ADMIN) && !commentPS.getUser().equals(user)) {
@@ -98,5 +86,16 @@ public class CommentService {
         return new CommentDeleteRespDto(commentId, true);
     }
 
+    private Schedule validateAndGetSchedule(Long scheduleId) {
+        return scheduleRepository.findById(scheduleId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
+        );
+    }
+
+    private Comment validateAndGetComment(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 댓글은 존재하지 않습니다")
+        );
+    }
 
 }
