@@ -20,7 +20,7 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Value("${secret.key}")
     private String SECRET_KEY;

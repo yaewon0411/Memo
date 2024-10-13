@@ -41,7 +41,7 @@ public class ScheduleService {
     private final CommentRepository commentRepository;
     private final ScheduleUserRepository scheduleUserRepository;
     private final WeatherService weatherService;
-    private final Logger log = LoggerFactory.getLogger(ScheduleService.class);
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 
     public PublicScheduleListRespDto findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter) {

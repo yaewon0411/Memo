@@ -30,7 +30,7 @@ import static com.my.memo.dto.user.RespDto.*;
 @Transactional(readOnly = true)
 public class UserService {
 
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final ScheduleUserRepository scheduleUserRepository;
