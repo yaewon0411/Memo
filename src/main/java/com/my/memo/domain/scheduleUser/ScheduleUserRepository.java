@@ -1,6 +1,7 @@
 package com.my.memo.domain.scheduleUser;
 
 import com.my.memo.domain.schedule.Schedule;
+import com.my.memo.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +16,8 @@ public interface ScheduleUserRepository extends JpaRepository<ScheduleUser, Long
 
     @Query("select su from ScheduleUser su left join fetch su.user u where su.schedule = :schedule")
     List<ScheduleUser> findScheduleUserBySchedule(@Param(value = "schedule") Schedule schedule);
+
+    int deleteByUser(User user);
 
 }
 

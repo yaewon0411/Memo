@@ -35,7 +35,9 @@ public class AuthenticateAdvice {
         }
 
         User userPS = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다"));
+                .orElseThrow(
+                        () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
+                );
 
         Object[] args = proceedingJoinPoint.getArgs();
         for (int i = 0; i < args.length; i++) {

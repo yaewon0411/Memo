@@ -2,6 +2,8 @@ package com.my.memo.service;
 
 import com.my.memo.aop.AuthenticateUser;
 import com.my.memo.config.jwt.JwtProvider;
+import com.my.memo.domain.comment.CommentRepository;
+import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
@@ -30,12 +32,21 @@ public class UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final ScheduleUserRepository scheduleUserRepository;
     private final JwtProvider jwtProvider;
 
 
     @Transactional
     @AuthenticateUser
     public UserDeleteRespDto deleteUser(User user) {
+
+        int deletedAssignedCnt = scheduleUserRepository.deleteByUser(user);
+        log.info("해당 유저 ID {} 배정 기록 삭제: 삭제된 개수 {}", user.getId(), deletedAssignedCnt);
+
+        int deletedCommentCnt = commentRepository.deleteByUser(user);
+        log.info("해당 유저 ID {} 코멘트 삭제: 삭제된 개수 {}", user.getId(), deletedCommentCnt);
+
         userRepository.delete(user);
         return new UserDeleteRespDto(true, user.getId());
     }
