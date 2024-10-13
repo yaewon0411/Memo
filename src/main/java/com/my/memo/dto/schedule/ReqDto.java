@@ -94,13 +94,14 @@ public class ReqDto {
         @NotNull(message = "공개 여부를 선택해야 합니다")
         private Boolean isPublic;
 
-        public Schedule toEntity(User user) {
+        public Schedule toEntity(User user, String weatherOnCreation) {
             return Schedule.builder()
                     .startAt(this.startAt)
                     .endAt(this.endAt)
                     .content(this.content)
                     .user(user)
                     .isPublic(this.isPublic)
+                    .weatherOnCreation(weatherOnCreation)
                     .build();
         }
     }

@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
  * 주로 문자열과 날짜 타입 간의 형 변환을 수행합니다
  */
 public class CustomUtil {
-    private static final DateTimeFormatter SCHEDULE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter SCHEDULE_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
 
     public static String convertToJson(Object object) throws JsonProcessingException {
         ObjectMapper om = new ObjectMapper();
@@ -20,11 +20,8 @@ public class CustomUtil {
         return om.writeValueAsString(object);
     }
 
-    public static LocalDateTime scheduleTimeToLocalDateTime(String str){
-        return LocalDateTime.parse(str, SCHEDULE_FORMATTER);
-    }
 
-    public static String localDateTimeToScheduleTime(LocalDateTime localDateTime){
+    public static String localDateTimeToFormattedString(LocalDateTime localDateTime) {
         return localDateTime.format(SCHEDULE_FORMATTER);
     }
 }

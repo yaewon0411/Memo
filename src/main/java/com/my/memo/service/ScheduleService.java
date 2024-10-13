@@ -12,6 +12,8 @@ import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.feign.WeatherService;
+import com.my.memo.util.CustomUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.my.memo.dto.schedule.ReqDto.*;
@@ -37,6 +40,7 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final CommentRepository commentRepository;
     private final ScheduleUserRepository scheduleUserRepository;
+    private final WeatherService weatherService;
     private final Logger log = LoggerFactory.getLogger(ScheduleService.class);
 
 
@@ -151,7 +155,9 @@ public class ScheduleService {
 
         userRepository.findUserWithSchedulesById(user.getId());
 
-        Schedule schedulePS = scheduleRepository.save(scheduleCreateReqDto.toEntity(user));
+        String todayWeather = weatherService.getTodayWeather(CustomUtil.localDateTimeToFormattedString(LocalDateTime.now()));
+
+        Schedule schedulePS = scheduleRepository.save(scheduleCreateReqDto.toEntity(user, todayWeather));
 
         log.info("일정 저장 완료 : 일정 ID {}, 유저 ID {}", schedulePS.getId(), user.getId());
         return new ScheduleCreateRespDto(schedulePS);

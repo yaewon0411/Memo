@@ -160,6 +160,7 @@ public class RespDto {
         private String name;
 
         private CommentsRespDto comments;
+        private String weatherOnCreation;
 
 
         private List<AssignedUserDto> assignedUserList;
@@ -175,6 +176,7 @@ public class RespDto {
             this.name = schedule.getUser().getName();
             this.assignedUserList = assignedUserList.stream().map(AssignedUserDto::new).toList();
             this.comments = new CommentsRespDto(commentPage);
+            this.weatherOnCreation = schedule.getWeatherOnCreation();
         }
 
         @NoArgsConstructor
@@ -247,6 +249,8 @@ public class RespDto {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
         private LocalDateTime createdAt;
 
+        private String weatherOnCreation;
+
         public ScheduleCreateRespDto(Schedule schedule) {
             this.id = schedule.getId();
             this.content = schedule.getContent();
@@ -255,6 +259,7 @@ public class RespDto {
             this.userId = schedule.getUser().getId();
             this.isPublic = schedule.isPublic();
             this.createdAt = schedule.getCreatedAt();
+            this.weatherOnCreation = schedule.getWeatherOnCreation();
         }
     }
 }

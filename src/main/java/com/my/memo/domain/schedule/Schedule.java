@@ -35,15 +35,17 @@ public class Schedule extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+    private String weatherOnCreation;
 
     @Builder
-    public Schedule(Long id, String content, LocalDateTime startAt, LocalDateTime endAt, boolean isPublic, User user) {
+    public Schedule(Long id, String content, LocalDateTime startAt, LocalDateTime endAt, boolean isPublic, User user, String weatherOnCreation) {
         this.id = id;
         this.content = content;
         this.startAt = startAt;
         this.endAt = endAt;
         this.isPublic = isPublic;
         this.user = user;
+        this.weatherOnCreation = weatherOnCreation;
         user.getScheduleList().add(this);
     }
 
