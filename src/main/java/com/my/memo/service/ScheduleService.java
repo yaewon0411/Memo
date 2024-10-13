@@ -8,13 +8,16 @@ import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto;
 import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
+import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +67,14 @@ public class ScheduleService {
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
 
+        //코멘트 삭제
+        int deletedCommentCnt = commentRepository.deleteBySchedule(schedulePS);
+        log.info("일정 ID {}에 달린 코멘트 삭제 완료: 삭제된 개수 {}", scheduleId, deletedCommentCnt);
+
+        //스케줄에 배정된 유저 리스트 삭제
+        int deletedAssignedUserCnt = scheduleUserRepository.deleteBySchedule(schedulePS);
+        log.info("일정 ID {}에 배정된 유저 삭제 완료: 삭제된 개수 {}", scheduleId, deletedAssignedUserCnt);
+
         //해당 스케줄 삭제
         schedulePS.getUser().getScheduleList().remove(schedulePS);
 
@@ -109,23 +120,28 @@ public class ScheduleService {
         return new UserScheduleListRespDto(scheduleList, hasNextPage, user);
     }
 
+
     @AuthenticateUser
-    public ScheduleRespDto findScheduleById(Long scheduleId, User user) {
+    public ScheduleRespDto findScheduleById(Long scheduleId, int page, int limit, User user) {
 
         Schedule schedulePS = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
 
-        // 비공개 일정인데 해당 유저의 일정이 아니면 에러
-        if (!schedulePS.isPublic() && !schedulePS.getUser().equals(user)) {
-            throw new CustomApiException(HttpStatus.FORBIDDEN.value(), "해당 일정에 접근할 권한이 없습니다");
+        if (!schedulePS.isPublic() && !user.getRole().equals(Role.ADMIN)) {
+            if (!schedulePS.getUser().equals(user)) {
+                throw new CustomApiException(HttpStatus.FORBIDDEN.value(), "해당 일정에 접근할 권한이 없습니다");
+            }
         }
 
-        List<Comment> commentList = commentRepository.findCommentsWithUserBySchedule(schedulePS);
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "createdAt"));
+
+        Page<Comment> commentPage = commentRepository.findCommentsWithUserBySchedule(schedulePS, pageRequest);
+        commentPage.getContent().forEach(c -> c.getUser().getName());
+
         List<ScheduleUser> assignedUserList = scheduleUserRepository.findScheduleUserBySchedule(schedulePS);
 
-        log.info("선택한 일정 조회 완료: 유저 ID {}, 일정 ID {}", user.getId(), scheduleId);
-        return new ScheduleRespDto(schedulePS, commentList, assignedUserList);
+        return new ScheduleRespDto(schedulePS, commentPage, assignedUserList);
     }
 
 
@@ -139,16 +155,6 @@ public class ScheduleService {
 
         log.info("일정 저장 완료 : 일정 ID {}, 유저 ID {}", schedulePS.getId(), user.getId());
         return new ScheduleCreateRespDto(schedulePS);
-    }
-
-    private User validateAndGetUser(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        if (userId == null) {
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "인증 정보가 없습니다. 재로그인 해주세요");
-        }
-
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다"));
     }
 
 

@@ -8,6 +8,7 @@ import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -158,10 +159,12 @@ public class RespDto {
         private LocalDateTime modifiedAt;
         private String name;
 
-        private List<CommentDto> commentList;
+        private CommentsRespDto comments;
+
+
         private List<AssignedUserDto> assignedUserList;
 
-        public ScheduleRespDto(Schedule schedule, List<Comment> commentList, List<ScheduleUser> assignedUserList) {
+        public ScheduleRespDto(Schedule schedule, Page<Comment> commentPage, List<ScheduleUser> assignedUserList) {
             this.content = schedule.getContent();
             this.startAt = schedule.getStartAt();
             this.endAt = schedule.getEndAt();
@@ -170,8 +173,48 @@ public class RespDto {
             this.createdAt = schedule.getCreatedAt();
             this.modifiedAt = schedule.getLastModifiedAt();
             this.name = schedule.getUser().getName();
-            this.commentList = commentList.stream().map(CommentDto::new).toList();
             this.assignedUserList = assignedUserList.stream().map(AssignedUserDto::new).toList();
+            this.comments = new CommentsRespDto(commentPage);
+        }
+
+        @NoArgsConstructor
+        @Getter
+        public static class CommentsRespDto {
+            private List<CommentDto> commentList;
+            private int totalPages;
+            private long totalComments;
+            private boolean hasNextPage;
+            private int currentPage;
+
+            public CommentsRespDto(Page<Comment> commentPage) {
+                this.commentList = commentPage.getContent().stream().map(CommentDto::new).toList();
+                this.totalPages = commentPage.getTotalPages();
+                this.totalComments = commentPage.getTotalElements();
+                this.hasNextPage = !commentPage.isLast();
+                this.currentPage = commentPage.getNumber();
+            }
+
+            @NoArgsConstructor
+            @Getter
+            public static class CommentDto {
+
+                private Long id;
+                private String content;
+                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+                private LocalDateTime createdAt;
+                private String name;
+                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+                private LocalDateTime modifiedAt;
+
+                public CommentDto(Comment comment) {
+                    this.id = comment.getId();
+                    this.content = comment.getContent();
+                    this.createdAt = comment.getCreatedAt();
+                    this.name = comment.getUser().getName();
+                    this.modifiedAt = comment.getLastModifiedAt();
+                }
+
+            }
         }
 
         @NoArgsConstructor
@@ -186,27 +229,7 @@ public class RespDto {
             }
         }
 
-        @NoArgsConstructor
-        @Getter
-        public static class CommentDto {
 
-            private Long id;
-            private String content;
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-            private LocalDateTime createdAt;
-            private String name;
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-            private LocalDateTime modifiedAt;
-
-            public CommentDto(Comment comment) {
-                this.id = comment.getId();
-                this.content = comment.getContent();
-                this.createdAt = comment.getCreatedAt();
-                this.name = comment.getUser() != null ? comment.getUser().getName() : "탈퇴한 유저";
-                this.modifiedAt = comment.getLastModifiedAt();
-            }
-
-        }
     }
 
     @NoArgsConstructor

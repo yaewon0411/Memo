@@ -30,6 +30,9 @@ public interface ScheduleUserRepository extends JpaRepository<ScheduleUser, Long
     @Query("select su.user.id from ScheduleUser su where su.schedule = :schedule")
     Set<Long> getAssignedUserIdsBySchedule(Schedule schedule);
 
+    @Modifying
+    @Query("delete from ScheduleUser su where su.schedule = :schedule")
+    int deleteBySchedule(Schedule schedule);
 }
 
 

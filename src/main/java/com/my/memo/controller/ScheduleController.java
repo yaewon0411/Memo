@@ -8,6 +8,7 @@ import com.my.memo.service.ScheduleService;
 import com.my.memo.service.ScheduleUserService;
 import com.my.memo.util.api.ApiResult;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,7 +102,7 @@ public class ScheduleController {
     }
 
 
-    @RequireAuth
+    @RequireAuth(role = Role.USER)
     @GetMapping("/s/schedules")
     public ResponseEntity<ApiResult<UserScheduleListRespDto>> findUserSchedules(@Valid UserScheduleFilter userScheduleFilter,
                                                                                 User user) {
@@ -111,8 +112,11 @@ public class ScheduleController {
 
     @RequireAuth(role = Role.USER)
     @GetMapping("/s/schedules/{scheduleId}")
-    public ResponseEntity<ApiResult<ScheduleRespDto>> findScheduleById(@PathVariable(name = "scheduleId") Long scheduleId, User user) {
-        return new ResponseEntity<>(ApiResult.success(scheduleService.findScheduleById(scheduleId, user)), HttpStatus.OK);
+    public ResponseEntity<ApiResult<ScheduleRespDto>> findScheduleById(@PathVariable(name = "scheduleId") Long scheduleId,
+                                                                       @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+                                                                       @RequestParam(name = "limit", defaultValue = "10") @Min(1) int limit,
+                                                                       User user) {
+        return new ResponseEntity<>(ApiResult.success(scheduleService.findScheduleById(scheduleId, page, limit, user)), HttpStatus.OK);
     }
 
 
