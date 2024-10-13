@@ -4,6 +4,9 @@ import com.my.memo.config.jwt.JwtProvider;
 import com.my.memo.config.jwt.JwtVo;
 import com.my.memo.config.jwt.RequireAuth;
 import com.my.memo.domain.user.Role;
+import com.my.memo.domain.user.User;
+import com.my.memo.domain.user.UserRepository;
+import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.CustomJwtException;
 import com.my.memo.util.CustomUtil;
 import com.my.memo.util.api.ApiResult;
@@ -25,6 +28,7 @@ import java.io.IOException;
 public class AuthInterceptor implements HandlerInterceptor {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -44,17 +48,24 @@ public class AuthInterceptor implements HandlerInterceptor {
                             Role userRole = Role.valueOf(jwtProvider.getUserRole(jwt));
                             Long userId = jwtProvider.getUserId(jwt);
 
-                            if (requireAuth.role().equals(Role.ADMIN)) {
-                                log.info("관리자 전용 api에 접속");
+                            User userPS = userRepository.findById(userId)
+                                    .orElseThrow(() -> {
+                                        if (requireAuth.role().equals(Role.ADMIN)) {
+                                            log.warn("존재하지 않는 관리자 접근 시도: ID {}", userId);
+                                            return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 관리자입니다");
+                                        } else {
+                                            log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
+                                            return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
+                                        }
+                                    });
 
-                                if (!requireAuth.role().equals(userRole)) {
-                                    setErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "권한이 없습니다");
-                                    return false;
-                                }
+                            if (requireAuth.role().equals(Role.ADMIN) && !requireAuth.role().equals(userRole)) {
+                                setErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "관리자 권한이 필요합니다");
+                                return false;
                             }
-                            request.setAttribute("userId", userId);
-                            request.setAttribute("userRole", userRole);
-                            log.info("유저 정보 설정: 유저 ID {}, 권한 {}", userId, userRole);
+
+                            request.setAttribute("user", userPS);
+                            log.info("유저 정보 설정: 유저 ID {}, 권한 {}", userPS.getId(), userPS.getRole());
                         }
                     } catch (CustomJwtException e) {
                         setErrorResponse(response, e.getStatus(), e.getMsg());
