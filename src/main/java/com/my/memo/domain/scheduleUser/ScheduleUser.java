@@ -24,7 +24,7 @@ public class ScheduleUser extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id")
-    private Schedule schedule;
+    private Schedule schedule; //최대 5명까지 배정 가능
 
     @Builder
     public ScheduleUser(User user, Schedule schedule) {

@@ -42,6 +42,8 @@ public class ScheduleUserService {
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
         );
 
+        validateScheduleUserLimit(schedulePS);
+
         User userPS = userRepository.findById(userId).orElseThrow(
                 () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 유저는 존재하지 않습니다")
         );
@@ -51,6 +53,13 @@ public class ScheduleUserService {
         log.info("유저 ID {}: 일정 ID {}에 유저 ID {}를 할당", authUserId, scheduleId, userId);
 
         return new UserAssignRespDto(scheduleUserPS);
+    }
+
+    //최대 인원으로 배정되었는지 검사
+    private void validateScheduleUserLimit(Schedule schedule) {
+        if (scheduleUserRepository.countScheduleUserBySchedule(schedule) >= 5) {
+            throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "해당 일정에는 더 이상 유저를 배정할 수 없습니다");
+        }
     }
 
 
