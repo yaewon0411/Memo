@@ -3,11 +3,10 @@ package com.my.memo.service;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.Schedule;
-import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
-import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.util.entity.EntityValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -26,8 +25,7 @@ import static com.my.memo.dto.comment.RespDto.*;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final ScheduleRepository scheduleRepository;
-    private final UserRepository userRepository;
+    private final EntityValidator entityValidator;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -35,10 +33,14 @@ public class CommentService {
     @Transactional
     public CommentCreateRespDto createComment(Long scheduleId, CommentCreateReqDto commentReqDto, HttpServletRequest request) {
 
-        User userPS = validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
 
         //일정 찾기
-        Schedule schedulePS = validateAndGetSchedule(scheduleId);
+        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
+
+        //관리자도 아니고 & 공개 일정도 아니고 & 해당 일정 만든 본인도 아니면
+        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.isPublic() && !schedulePS.getUser().equals(userPS))
+            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 일정에 접근할 수 없습니다");
 
         //코멘트 저장
         Comment commentPS = commentRepository.save(commentReqDto.toEntity(userPS, schedulePS));
@@ -50,11 +52,11 @@ public class CommentService {
     @Transactional
     public CommentModifyRespDto updateComment(Long scheduleId, Long commentId, CommentModifyReqDto commentModifyReqDto, HttpServletRequest request) {
 
-        User userPS = validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
 
-        validateAndGetSchedule(scheduleId);
+        entityValidator.validateAndGetSchedule(scheduleId);
 
-        Comment commentPS = validateAndGetComment(commentId);
+        Comment commentPS = entityValidator.validateAndGetComment(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
         if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().equals(userPS)) {
@@ -73,11 +75,11 @@ public class CommentService {
     @Transactional
     public CommentDeleteRespDto deleteComment(Long scheduleId, Long commentId, HttpServletRequest request) {
 
-        User userPS = validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
 
-        validateAndGetSchedule(scheduleId);
+        entityValidator.validateAndGetSchedule(scheduleId);
 
-        Comment commentPS = validateAndGetComment(commentId);
+        Comment commentPS = entityValidator.validateAndGetComment(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
         if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().equals(userPS)) {
@@ -88,31 +90,6 @@ public class CommentService {
         log.info("코멘트 삭제 완료: 코멘트 ID {}", commentId);
 
         return new CommentDeleteRespDto(commentId, true);
-    }
-
-    private Schedule validateAndGetSchedule(Long scheduleId) {
-        return scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
-    }
-
-    private Comment validateAndGetComment(Long commentId) {
-        return commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 댓글은 존재하지 않습니다")
-        );
-    }
-
-    private User validateAndGetUser(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-
-        if (userId == null) {
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
-        }
-        return userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
-                    return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
-                });
     }
 
 

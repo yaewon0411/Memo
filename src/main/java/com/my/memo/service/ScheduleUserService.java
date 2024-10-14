@@ -1,13 +1,13 @@
 package com.my.memo.service;
 
 import com.my.memo.domain.schedule.Schedule;
-import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.util.entity.EntityValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -32,15 +32,16 @@ public class ScheduleUserService {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final ScheduleUserRepository scheduleUserRepository;
-    private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
+    private final EntityValidator entityValidator;
+
 
     @Transactional
     public AssignedUserDeleteRespDto deleteAssignedUser(Long scheduleId, AssignedUserDeleteReqDto assignedUserDeleteReqDto, HttpServletRequest request) {
 
-        User userPS = validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
 
-        Schedule schedulePS = validateAndGetSchedule(scheduleId);
+        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
         if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(userPS)) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 일정에 접근할 권한이 없습니다");
@@ -63,9 +64,9 @@ public class ScheduleUserService {
     @Transactional
     public UserAssignRespDto assignUserToSchedule(Long scheduleId, UserAssignReqDto userAssignReqDto, HttpServletRequest request) {
 
-        User userPS = validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
 
-        Schedule schedulePS = validateAndGetSchedule(scheduleId);
+        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
         if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(userPS)) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 일정에 접근할 권한이 없습니다");
@@ -82,7 +83,7 @@ public class ScheduleUserService {
         Set<Long> assignedUserIdSet = scheduleUserRepository.getAssignedUserIdsBySchedule(schedulePS);
         for (Long userId : userIdListToAssign) {
             if (assignedUserIdSet.contains(userId))
-                throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "이미 해당 일정에 배정된 유저가 포함되어 있습니다: " + userId);
+                throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "이미 해당 일정에 배정된 유저가 포함되어 있습니다");
         }
 
         //유저 목록 조회
@@ -105,25 +106,5 @@ public class ScheduleUserService {
         if (currentAssignUserCnt + newAssignUserCnt > 5)
             throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "해당 일정에는 더 이상 유저를 배정할 수 없습니다");
     }
-
-    private Schedule validateAndGetSchedule(Long scheduleId) {
-        return scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
-    }
-
-    private User validateAndGetUser(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-
-        if (userId == null) {
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
-        }
-        return userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
-                    return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
-                });
-    }
-
 
 }

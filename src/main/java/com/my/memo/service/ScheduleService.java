@@ -9,10 +9,10 @@ import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
-import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.feign.WeatherService;
 import com.my.memo.util.CustomUtil;
+import com.my.memo.util.entity.EntityValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -36,10 +36,11 @@ import static com.my.memo.dto.schedule.RespDto.*;
 @Transactional(readOnly = true)
 public class ScheduleService {
 
-    private final UserRepository userRepository;
+
     private final ScheduleRepository scheduleRepository;
     private final CommentRepository commentRepository;
     private final ScheduleUserRepository scheduleUserRepository;
+    private final EntityValidator entityValidator;
     private final WeatherService weatherService;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -62,12 +63,13 @@ public class ScheduleService {
     // 일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
     public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, HttpServletRequest request) {
-        User userPS = validateAndGetUser(request);
+
+        User userPS = entityValidator.validateAndGetUser(request);
 
         log.info("일정 삭제 시도: 관리자 ID {}", userPS.getId());
 
         //해당 일정 조회
-        Schedule schedulePS = validateAndGetSchedule(scheduleId);
+        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
         //코멘트 삭제
         int deletedCommentCnt = commentRepository.deleteBySchedule(schedulePS);
@@ -90,12 +92,13 @@ public class ScheduleService {
     //일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
     public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId, HttpServletRequest request) {
-        User userPS = validateAndGetUser(request);
+
+        User userPS = entityValidator.validateAndGetUser(request);
 
         log.info("일정 수정 시도: 관리자 ID {}", userPS.getId());
 
         //해당 일정 조회
-        Schedule schedulePS = validateAndGetSchedule(scheduleId);
+        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
         // 요청한 필드에 대해 수정
         schedulePS.modify(scheduleModifyReqDto);
@@ -104,7 +107,8 @@ public class ScheduleService {
     }
 
     public UserScheduleListRespDto findUserSchedules(UserScheduleFilter userScheduleFilter, HttpServletRequest request) {
-        User userPS = validateAndGetUser(request);
+
+        User userPS = entityValidator.validateAndGetUser(request);
 
         List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
 
@@ -122,9 +126,10 @@ public class ScheduleService {
 
 
     public ScheduleRespDto findScheduleById(Long scheduleId, int page, int limit, HttpServletRequest request) {
-        User userPS = validateAndGetUser(request);
 
-        Schedule schedulePS = validateAndGetSchedule(scheduleId);
+        User userPS = entityValidator.validateAndGetUser(request);
+
+        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
         if (!schedulePS.isPublic() && !userPS.getRole().equals(Role.ADMIN)) {
             if (!schedulePS.getUser().equals(userPS)) {
@@ -146,7 +151,7 @@ public class ScheduleService {
     @Transactional
     public ScheduleCreateRespDto createSchedule(ScheduleCreateReqDto scheduleCreateReqDto, HttpServletRequest request) {
 
-        User userPS = validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
 
         String todayWeather = weatherService.getTodayWeather(CustomUtil.localDateTimeToFormattedString(LocalDateTime.now()));
 
@@ -154,25 +159,6 @@ public class ScheduleService {
 
         log.info("일정 저장 완료 : 일정 ID {}, 유저 ID {}", schedulePS.getId(), userPS.getId());
         return new ScheduleCreateRespDto(schedulePS);
-    }
-
-    private User validateAndGetUser(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-
-        if (userId == null) {
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
-        }
-        return userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
-                    return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
-                });
-    }
-
-    private Schedule validateAndGetSchedule(Long scheduleId) {
-        return scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
-        );
     }
 
 

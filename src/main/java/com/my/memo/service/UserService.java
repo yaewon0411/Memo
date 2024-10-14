@@ -8,6 +8,7 @@ import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.CustomPasswordUtil;
+import com.my.memo.util.entity.EntityValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.my.memo.dto.user.ReqDto.*;
 import static com.my.memo.dto.user.RespDto.*;
 
-/**
- * 유저 관련 서비스 클래스입니다
- * <p>
- * 로그인, 로그아웃, 회원가입, 정보 조회, 정보 수정, 유저 삭제와 관련된 비즈니스 로직을 처리합니다
- * 트랜잭션 관리와 예외 처리를 직접 처리합니다
- */
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -37,13 +33,14 @@ public class UserService {
     private final ScheduleUserRepository scheduleUserRepository;
     private final ScheduleRepository scheduleRepository;
     private final JwtProvider jwtProvider;
+    private final EntityValidator entityValidator;
 
 
     //TODO 다시 확인
     @Transactional
     public UserDeleteRespDto deleteUser(HttpServletRequest request) {
 
-        User userPS = validateAndGetuser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
         userRepository.findUserWithSchedulesById(userPS.getId());
 
         int deletedAssignedCnt = scheduleUserRepository.deleteByUser(userPS, userPS.getScheduleList());
@@ -60,7 +57,7 @@ public class UserService {
     }
 
     public UserRespDto getUserInfo(HttpServletRequest request) {
-        User userPS = validateAndGetuser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
         return new UserRespDto(userPS);
     }
 
@@ -68,7 +65,7 @@ public class UserService {
     @Transactional
     public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, HttpServletRequest request) {
 
-        User userPS = validateAndGetuser(request);
+        User userPS = entityValidator.validateAndGetUser(request);
 
         //수정 요청한 이메일이 사용중인 이메일인지 검사
         if (userModifyReqDto.getEmail() != null && !userPS.getEmail().equals(userModifyReqDto.getEmail())) {
@@ -117,18 +114,6 @@ public class UserService {
         log.info("로그인 성공: 유저 ID {}", userPS.getId());
 
         return new LoginRespDto(userPS);
-    }
-
-    private User validateAndGetuser(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        if (userId == null) {
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
-        }
-        return userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
-                    return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
-                });
     }
 
 
