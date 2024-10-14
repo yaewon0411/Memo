@@ -1,4 +1,4 @@
-package com.my.memo.feign.dto;
+package com.my.memo.client.weather.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

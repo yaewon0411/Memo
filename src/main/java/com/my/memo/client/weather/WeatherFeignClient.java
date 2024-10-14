@@ -1,6 +1,6 @@
-package com.my.memo.feign;
+package com.my.memo.client;
 
-import com.my.memo.feign.dto.DateWeatherDto;
+import com.my.memo.client.dto.DateWeatherDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 

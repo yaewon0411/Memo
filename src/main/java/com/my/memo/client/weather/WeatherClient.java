@@ -1,7 +1,7 @@
-package com.my.memo.feign;
+package com.my.memo.client.weather;
 
+import com.my.memo.client.weather.dto.DateWeatherDto;
 import com.my.memo.ex.CustomApiException;
-import com.my.memo.feign.dto.DateWeatherDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class WeatherService {
+public class WeatherClient {
 
     private final WeatherFeignClient weatherFeignClient;
 
