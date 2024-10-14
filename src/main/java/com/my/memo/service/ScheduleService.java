@@ -1,5 +1,6 @@
 package com.my.memo.service;
 
+import com.my.memo.client.weather.WeatherClient;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.Schedule;
@@ -10,10 +11,8 @@ import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.ex.CustomApiException;
-import com.my.memo.feign.WeatherService;
 import com.my.memo.util.CustomUtil;
 import com.my.memo.util.entity.EntityValidator;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,7 @@ public class ScheduleService {
     private final CommentRepository commentRepository;
     private final ScheduleUserRepository scheduleUserRepository;
     private final EntityValidator entityValidator;
-    private final WeatherService weatherService;
+    private final WeatherClient weatherClient;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 
@@ -62,9 +61,9 @@ public class ScheduleService {
 
     // 일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
-    public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, HttpServletRequest request) {
+    public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         log.info("일정 삭제 시도: 관리자 ID {}", userPS.getId());
 
@@ -91,9 +90,9 @@ public class ScheduleService {
 
     //일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
-    public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId, HttpServletRequest request) {
+    public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         log.info("일정 수정 시도: 관리자 ID {}", userPS.getId());
 
@@ -106,9 +105,9 @@ public class ScheduleService {
         return new ScheduleModifyRespDto(schedulePS);
     }
 
-    public UserScheduleListRespDto findUserSchedules(UserScheduleFilter userScheduleFilter, HttpServletRequest request) {
+    public UserScheduleListRespDto findUserSchedules(UserScheduleFilter userScheduleFilter, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
 
@@ -125,9 +124,9 @@ public class ScheduleService {
     }
 
 
-    public ScheduleRespDto findScheduleById(Long scheduleId, int page, int limit, HttpServletRequest request) {
+    public ScheduleRespDto findScheduleById(Long scheduleId, int page, int limit, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
@@ -149,11 +148,11 @@ public class ScheduleService {
 
 
     @Transactional
-    public ScheduleCreateRespDto createSchedule(ScheduleCreateReqDto scheduleCreateReqDto, HttpServletRequest request) {
+    public ScheduleCreateRespDto createSchedule(ScheduleCreateReqDto scheduleCreateReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
-        String todayWeather = weatherService.getTodayWeather(CustomUtil.localDateTimeToFormattedString(LocalDateTime.now()));
+        String todayWeather = weatherClient.getTodayWeather(CustomUtil.localDateTimeToFormattedString(LocalDateTime.now()));
 
         Schedule schedulePS = scheduleRepository.save(scheduleCreateReqDto.toEntity(userPS, todayWeather));
 

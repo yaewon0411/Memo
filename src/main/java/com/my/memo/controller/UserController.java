@@ -1,10 +1,11 @@
 package com.my.memo.controller;
 
+import com.my.memo.config.jwt.JwtProvider;
 import com.my.memo.config.jwt.RequireAuth;
+import com.my.memo.config.user.UserId;
 import com.my.memo.domain.user.Role;
 import com.my.memo.service.UserService;
 import com.my.memo.util.api.ApiResult;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,27 +22,28 @@ import static com.my.memo.dto.user.RespDto.*;
 public class UserController {
 
     private final UserService userService;
+    private final JwtProvider jwtProvider;
 
 
     @RequireAuth(role = Role.USER)
     @DeleteMapping("/users")
-    public ResponseEntity<ApiResult<UserDeleteRespDto>> deleteUser(HttpServletRequest request) {
-        return new ResponseEntity<>(ApiResult.success(userService.deleteUser(request)), HttpStatus.OK);
+    public ResponseEntity<ApiResult<UserDeleteRespDto>> deleteUser(@UserId Long userId) {
+        return new ResponseEntity<>(ApiResult.success(userService.deleteUser(userId)), HttpStatus.OK);
     }
 
 
     @RequireAuth(role = Role.USER)
     @GetMapping("/users")
-    public ResponseEntity<ApiResult<UserRespDto>> getUserInfo(HttpServletRequest request) {
-        return new ResponseEntity<>(ApiResult.success(userService.getUserInfo(request)), HttpStatus.OK);
+    public ResponseEntity<ApiResult<UserRespDto>> getUserInfo(@UserId Long userId) {
+        return new ResponseEntity<>(ApiResult.success(userService.getUserInfo(userId)), HttpStatus.OK);
     }
 
 
     @RequireAuth(role = Role.USER)
     @PatchMapping("/users")
     public ResponseEntity<ApiResult<UserModifyRespDto>> updateUser(@RequestBody @Valid UserModifyReqDto userModifyReqDto,
-                                                                   HttpServletRequest request) {
-        return new ResponseEntity<>(ApiResult.success(userService.updateUser(userModifyReqDto, request)), HttpStatus.OK);
+                                                                   @UserId Long userId) {
+        return new ResponseEntity<>(ApiResult.success(userService.updateUser(userModifyReqDto, userId)), HttpStatus.OK);
     }
 
 
@@ -54,7 +56,10 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ApiResult<LoginRespDto>> login(@RequestBody @Valid LoginReqDto loginReqDto,
                                                          HttpServletResponse response) {
-        return new ResponseEntity<>(ApiResult.success(userService.login(loginReqDto, response)), HttpStatus.OK);
+
+        LoginRespDto result = userService.login(loginReqDto);
+        jwtProvider.addJwtToHeader(result.getJwt(), response);
+        return new ResponseEntity<>(ApiResult.success(result), HttpStatus.OK);
     }
 
 }

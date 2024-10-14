@@ -1,6 +1,7 @@
 package com.my.memo.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
@@ -71,10 +72,13 @@ public class RespDto {
     public static class LoginRespDto {
         private Long userId;
         private String name;
+        @JsonIgnore
+        private String jwt;
 
-        public LoginRespDto(User user) {
+        public LoginRespDto(User user, String jwt) {
             this.userId = user.getId();
             this.name = user.getName();
+            this.jwt = jwt;
         }
     }
 

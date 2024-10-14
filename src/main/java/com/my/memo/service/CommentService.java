@@ -7,7 +7,6 @@ import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.entity.EntityValidator;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +30,9 @@ public class CommentService {
 
     //댓글 저장
     @Transactional
-    public CommentCreateRespDto createComment(Long scheduleId, CommentCreateReqDto commentReqDto, HttpServletRequest request) {
+    public CommentCreateRespDto createComment(Long scheduleId, CommentCreateReqDto commentReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         //일정 찾기
         Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
@@ -50,9 +49,9 @@ public class CommentService {
 
     // 댓글 수정
     @Transactional
-    public CommentModifyRespDto updateComment(Long scheduleId, Long commentId, CommentModifyReqDto commentModifyReqDto, HttpServletRequest request) {
+    public CommentModifyRespDto updateComment(Long scheduleId, Long commentId, CommentModifyReqDto commentModifyReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         entityValidator.validateAndGetSchedule(scheduleId);
 
@@ -73,9 +72,9 @@ public class CommentService {
 
     //댓글 삭제
     @Transactional
-    public CommentDeleteRespDto deleteComment(Long scheduleId, Long commentId, HttpServletRequest request) {
+    public CommentDeleteRespDto deleteComment(Long scheduleId, Long commentId, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         entityValidator.validateAndGetSchedule(scheduleId);
 

@@ -9,8 +9,6 @@ import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.CustomPasswordUtil;
 import com.my.memo.util.entity.EntityValidator;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,11 +34,10 @@ public class UserService {
     private final EntityValidator entityValidator;
 
 
-    //TODO 다시 확인
     @Transactional
-    public UserDeleteRespDto deleteUser(HttpServletRequest request) {
+    public UserDeleteRespDto deleteUser(Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
         userRepository.findUserWithSchedulesById(userPS.getId());
 
         int deletedAssignedCnt = scheduleUserRepository.deleteByUser(userPS, userPS.getScheduleList());
@@ -56,16 +53,16 @@ public class UserService {
         return new UserDeleteRespDto(true, userPS.getId());
     }
 
-    public UserRespDto getUserInfo(HttpServletRequest request) {
-        User userPS = entityValidator.validateAndGetUser(request);
+    public UserRespDto getUserInfo(Long userId) {
+        User userPS = entityValidator.validateAndGetUser(userId);
         return new UserRespDto(userPS);
     }
 
 
     @Transactional
-    public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, HttpServletRequest request) {
+    public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         //수정 요청한 이메일이 사용중인 이메일인지 검사
         if (userModifyReqDto.getEmail() != null && !userPS.getEmail().equals(userModifyReqDto.getEmail())) {
@@ -95,7 +92,7 @@ public class UserService {
     }
 
 
-    public LoginRespDto login(LoginReqDto loginReqDto, HttpServletResponse response) {
+    public LoginRespDto login(LoginReqDto loginReqDto) {
 
         User userPS = userRepository.findUserByEmail(loginReqDto.getEmail()).orElseThrow(
                 () -> new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "이메일이 일치하지 않습니다")
@@ -109,11 +106,7 @@ public class UserService {
 
         String jwt = jwtProvider.create(userPS);
 
-        jwtProvider.addJwtToHeader(jwt, response);
-
-        log.info("로그인 성공: 유저 ID {}", userPS.getId());
-
-        return new LoginRespDto(userPS);
+        return new LoginRespDto(userPS, jwt);
     }
 
 

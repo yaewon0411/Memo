@@ -4,7 +4,6 @@ import com.my.memo.config.jwt.JwtProvider;
 import com.my.memo.config.jwt.JwtVo;
 import com.my.memo.config.jwt.RequireAuth;
 import com.my.memo.domain.user.Role;
-import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomJwtException;
 import com.my.memo.util.CustomUtil;
 import com.my.memo.util.api.ApiResult;
@@ -26,7 +25,6 @@ import java.io.IOException;
 public class AuthInterceptor implements HandlerInterceptor {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final JwtProvider jwtProvider;
-    private final UserRepository userRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

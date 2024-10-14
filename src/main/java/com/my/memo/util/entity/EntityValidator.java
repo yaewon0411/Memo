@@ -7,7 +7,6 @@ import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +35,7 @@ public class EntityValidator {
         );
     }
 
-    public User validateAndGetUser(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
+    public User validateAndGetUser(Long userId) {
 
         if (userId == null) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");

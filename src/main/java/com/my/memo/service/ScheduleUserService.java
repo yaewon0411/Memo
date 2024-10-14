@@ -8,7 +8,6 @@ import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.entity.EntityValidator;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +36,9 @@ public class ScheduleUserService {
 
 
     @Transactional
-    public AssignedUserDeleteRespDto deleteAssignedUser(Long scheduleId, AssignedUserDeleteReqDto assignedUserDeleteReqDto, HttpServletRequest request) {
+    public AssignedUserDeleteRespDto deleteAssignedUser(Long scheduleId, AssignedUserDeleteReqDto assignedUserDeleteReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
@@ -62,9 +61,9 @@ public class ScheduleUserService {
     }
 
     @Transactional
-    public UserAssignRespDto assignUserToSchedule(Long scheduleId, UserAssignReqDto userAssignReqDto, HttpServletRequest request) {
+    public UserAssignRespDto assignUserToSchedule(Long scheduleId, UserAssignReqDto userAssignReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(request);
+        User userPS = entityValidator.validateAndGetUser(userId);
 
         Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
@@ -81,8 +80,8 @@ public class ScheduleUserService {
 
         //이미 일정에 배정된 유저인지 검사
         Set<Long> assignedUserIdSet = scheduleUserRepository.getAssignedUserIdsBySchedule(schedulePS);
-        for (Long userId : userIdListToAssign) {
-            if (assignedUserIdSet.contains(userId))
+        for (Long userIdToAssign : userIdListToAssign) {
+            if (assignedUserIdSet.contains(userIdToAssign))
                 throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "이미 해당 일정에 배정된 유저가 포함되어 있습니다");
         }
 
