@@ -1,6 +1,7 @@
 package com.my.memo.hanlder;
 
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.util.api.ApiError;
 import com.my.memo.util.api.ApiResult;
 import jakarta.validation.ConstraintViolationException;
 import org.hibernate.validator.internal.engine.path.PathImpl;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -28,8 +30,14 @@ public class CustomExceptionHandler {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResult<ApiError>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+        String errorMsg = String.format("잘못된 HTTP 메서드를 사용했습니다. 가능한 HTTP 메서드: %s", e.getSupportedHttpMethods());
+        return new ResponseEntity<>(ApiResult.error(HttpStatus.METHOD_NOT_ALLOWED.value(), errorMsg), HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> validationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResult<Map<String, String>>> validationException(MethodArgumentNotValidException e) {
         Map<String, String> errorMap = new HashMap<>();
         e.getBindingResult().getFieldErrors().forEach(error ->
                 errorMap.put(error.getField(), error.getDefaultMessage())
@@ -40,20 +48,19 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<?> handleNoResourceFoundException(NoResourceFoundException e) {
+    public ResponseEntity<ApiResult<ApiError>> handleNoResourceFoundException(NoResourceFoundException e) {
         return new ResponseEntity<>(ApiResult.error(HttpStatus.NOT_FOUND.value(), "요청된 URI를 찾을 수 없습니다"), HttpStatus.NOT_FOUND);
     }
 
 
     @ExceptionHandler(CustomApiException.class)
-    public ResponseEntity<?> apiException(CustomApiException e) {
+    public ResponseEntity<ApiResult<ApiError>> apiException(CustomApiException e) {
         return new ResponseEntity<>(ApiResult.error(e.getStatus(), e.getMsg()), HttpStatusCode.valueOf(e.getStatus()));
     }
 
 
-
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<?> queryParameterValidationException(ConstraintViolationException e) {
+    public ResponseEntity<ApiResult<Map<String, String>>> queryParameterValidationException(ConstraintViolationException e) {
         Map<String, String> errorMap = new HashMap<>();
         e.getConstraintViolations().forEach(error ->
                 errorMap.put(((PathImpl) (error.getPropertyPath())).getLeafNode().getName(), error.getMessage()));
