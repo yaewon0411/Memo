@@ -18,6 +18,9 @@ public class NameValidator implements ConstraintValidator<IsKoreanOrEnglish, Str
         if (name == null)
             return true;
 
+        if (name.trim().isEmpty())
+            return false;
+
         String[] words = name.split(" ");
         for (String word : words) {
             if (!word.chars().allMatch(c -> isKoreanCharacter(c) || isEnglishCharacter(c))) {
