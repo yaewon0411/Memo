@@ -24,21 +24,21 @@ public class UserController {
 
 
     @RequireAuth(role = Role.USER)
-    @DeleteMapping("/s/users")
+    @DeleteMapping("/users")
     public ResponseEntity<ApiResult<UserDeleteRespDto>> deleteUser(HttpServletRequest request) {
         return new ResponseEntity<>(ApiResult.success(userService.deleteUser(request)), HttpStatus.OK);
     }
 
 
     @RequireAuth(role = Role.USER)
-    @GetMapping("/s/users")
+    @GetMapping("/users")
     public ResponseEntity<ApiResult<UserRespDto>> getUserInfo(HttpServletRequest request) {
         return new ResponseEntity<>(ApiResult.success(userService.getUserInfo(request)), HttpStatus.OK);
     }
 
 
     @RequireAuth(role = Role.USER)
-    @PatchMapping("/s/users")
+    @PatchMapping("/users")
     public ResponseEntity<ApiResult<UserModifyRespDto>> updateUser(@RequestBody @Valid UserModifyReqDto userModifyReqDto,
                                                                    HttpServletRequest request) {
         return new ResponseEntity<>(ApiResult.success(userService.updateUser(userModifyReqDto, request)), HttpStatus.OK);

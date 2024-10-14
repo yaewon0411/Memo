@@ -18,8 +18,14 @@ public class NameValidator implements ConstraintValidator<IsKoreanOrEnglish, Str
         if (name == null)
             return true;
 
+        String[] words = name.split(" ");
+        for (String word : words) {
+            if (!word.chars().allMatch(c -> isKoreanCharacter(c) || isEnglishCharacter(c))) {
+                return false;
+            }
+        }
 
-        return name.chars().allMatch(c -> isKoreanCharacter(c) || isEnglishCharacter(c));
+        return true;
     }
 
     private boolean isKoreanCharacter(int c) {
@@ -29,4 +35,5 @@ public class NameValidator implements ConstraintValidator<IsKoreanOrEnglish, Str
     private boolean isEnglishCharacter(int c) {
         return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
     }
+
 }
