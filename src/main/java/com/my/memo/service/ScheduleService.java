@@ -48,14 +48,17 @@ public class ScheduleService {
 
         List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findPublicSchedulesWithFilters(publicScheduleFilter);
 
-        boolean hasNextPage = false;
+        int totalPublicSchedules = scheduleRepository.countPublicSchedules();
+        int totalPages = (int) Math.ceil((double) totalPublicSchedules / publicScheduleFilter.getLimit());
+        int currentPage = publicScheduleFilter.getPage().intValue();
 
-        if (scheduleList.size() > publicScheduleFilter.getLimit()) {
-            hasNextPage = true;
-            scheduleList = scheduleList.subList(0, (int) publicScheduleFilter.getLimit().longValue());
+        boolean hasNextPage = scheduleList.size() > publicScheduleFilter.getLimit();
+
+        if (hasNextPage) {
+            scheduleList = scheduleList.subList(0, publicScheduleFilter.getLimit().intValue());
         }
 
-        return new PublicScheduleListRespDto(scheduleList, hasNextPage);
+        return new PublicScheduleListRespDto(scheduleList, hasNextPage, totalPublicSchedules, totalPages, currentPage);
     }
 
 
@@ -111,16 +114,19 @@ public class ScheduleService {
 
         List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
 
-        boolean hasNextPage = false;
+        int totalUserSchedules = scheduleRepository.countUserSchedules(userId);
+        int totalPages = (int) Math.ceil((double) totalUserSchedules / userScheduleFilter.getLimit());
+        int currentPage = userScheduleFilter.getPage().intValue();
+
+        boolean hasNextPage = scheduleList.size() > userScheduleFilter.getLimit();
 
         // 만약 가져온 스케줄의 수가 limit을 초과하면 -> 다음 페이지 있음
-        if (scheduleList.size() > userScheduleFilter.getLimit()) {
-            hasNextPage = true;
-            scheduleList = scheduleList.subList(0, (int) userScheduleFilter.getLimit().longValue());  // 현재 페이지에 필요한 데이터만 남김
+        if (hasNextPage) {
+            scheduleList = scheduleList.subList(0, userScheduleFilter.getLimit().intValue());  // 현재 페이지에 필요한 데이터만 남김
         }
 
         log.info("유저 전체 일정 조회 완료: 유저 ID {}", userPS.getId());
-        return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS);
+        return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS, totalUserSchedules, totalPages, currentPage);
     }
 
 

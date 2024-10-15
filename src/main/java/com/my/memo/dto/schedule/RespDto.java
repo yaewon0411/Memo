@@ -29,14 +29,18 @@ public class RespDto {
     public static class PublicScheduleListRespDto {
         private List<ScheduleRespDto> scheduleRespDtoList;
         private boolean hasNextPage;
-        private int size;
+        private int totalCounts;
+        private int totalPages;
+        private int currentPage;
 
-        public PublicScheduleListRespDto(List<ScheduleWithCommentAndUserCountsDto> scheduleList, boolean hasNextPage) {
+        public PublicScheduleListRespDto(List<ScheduleWithCommentAndUserCountsDto> scheduleList, boolean hasNextPage, int totalPublicSchedules, int totalPages, int currentPage) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
-                    .map(s -> new ScheduleRespDto(s))
+                    .map(ScheduleRespDto::new)
                     .collect(Collectors.toList());
-            this.size = this.scheduleRespDtoList.size();
+            this.totalCounts = totalPublicSchedules;
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
         }
 
         @NoArgsConstructor
@@ -103,16 +107,20 @@ public class RespDto {
 
         private List<ScheduleRespDto> scheduleRespDtoList;
         private boolean hasNextPage;
-        private int size;
         private String name;
+        private int totalCounts;
+        private int totalPages;
+        private int currentPage;
 
-        public UserScheduleListRespDto(List<ScheduleWithCommentAndUserCountsDto> scheduleList, boolean hasNextPage, User user) {
+        public UserScheduleListRespDto(List<ScheduleWithCommentAndUserCountsDto> scheduleList, boolean hasNextPage, User user, int totalCounts, int totalPages, int currentPage) {
             this.hasNextPage = hasNextPage;
             this.scheduleRespDtoList = scheduleList.stream()
                     .map(s -> new ScheduleRespDto(s))
                     .collect(Collectors.toList());
-            this.size = this.scheduleRespDtoList.size();
             this.name = user.getName();
+            this.totalCounts = totalCounts;
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
         }
 
         @NoArgsConstructor
@@ -184,14 +192,14 @@ public class RespDto {
         public static class CommentsRespDto {
             private List<CommentDto> commentList;
             private int totalPages;
-            private long totalComments;
+            private long totalCounts;
             private boolean hasNextPage;
             private int currentPage;
 
             public CommentsRespDto(Page<Comment> commentPage) {
                 this.commentList = commentPage.getContent().stream().map(CommentDto::new).toList();
                 this.totalPages = commentPage.getTotalPages();
-                this.totalComments = commentPage.getTotalElements();
+                this.totalCounts = commentPage.getTotalElements();
                 this.hasNextPage = !commentPage.isLast();
                 this.currentPage = commentPage.getNumber();
             }
