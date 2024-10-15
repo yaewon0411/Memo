@@ -1,6 +1,6 @@
 package com.my.memo.controller;
 
-import com.my.memo.config.auth.jwt.JwtProvider;
+import com.my.memo.config.auth.jwt.JwtVo;
 import com.my.memo.config.auth.jwt.RequireAuth;
 import com.my.memo.config.user.UserId;
 import com.my.memo.domain.user.Role;
@@ -22,7 +22,6 @@ import static com.my.memo.dto.user.RespDto.*;
 public class UserController {
 
     private final UserService userService;
-    private final JwtProvider jwtProvider;
 
 
     @RequireAuth(role = Role.USER)
@@ -54,11 +53,10 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResult<LoginRespDto>> login(@RequestBody @Valid LoginReqDto loginReqDto,
-                                                         HttpServletResponse response) {
+    public ResponseEntity<ApiResult<LoginRespDto>> login(@RequestBody @Valid LoginReqDto loginReqDto, HttpServletResponse response) {
 
         LoginRespDto result = userService.login(loginReqDto);
-        jwtProvider.addJwtToHeader(result.getJwt(), response);
+        response.setHeader(JwtVo.HEADER, result.getJwt());
         return new ResponseEntity<>(ApiResult.success(result), HttpStatus.OK);
     }
 

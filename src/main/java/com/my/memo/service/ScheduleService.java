@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,6 +42,7 @@ public class ScheduleService {
     private final ScheduleUserRepository scheduleUserRepository;
     private final EntityValidator entityValidator;
     private final WeatherClient weatherClient;
+    private final Clock clock;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 
@@ -158,7 +160,7 @@ public class ScheduleService {
 
         User userPS = entityValidator.validateAndGetUser(userId);
 
-        String todayWeather = weatherClient.getTodayWeather(CustomUtil.localDateTimeToFormattedString(LocalDateTime.now()));
+        String todayWeather = weatherClient.getTodayWeather(CustomUtil.localDateTimeToFormattedString(LocalDateTime.now(clock)));
 
         Schedule schedulePS = scheduleRepository.save(scheduleCreateReqDto.toEntity(userPS, todayWeather));
 
