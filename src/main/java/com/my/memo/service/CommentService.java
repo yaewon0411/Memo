@@ -58,7 +58,7 @@ public class CommentService {
         Comment commentPS = entityValidator.validateAndGetComment(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
-        if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().equals(userPS)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().getId().equals(userId)) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 댓글에 접근할 권한이 없습니다");
         }
 
@@ -81,7 +81,7 @@ public class CommentService {
         Comment commentPS = entityValidator.validateAndGetComment(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
-        if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().equals(userPS)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().getId().equals(userId)) {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 댓글에 접근할 권한이 없습니다");
         }
 
