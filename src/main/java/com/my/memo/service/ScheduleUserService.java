@@ -103,7 +103,7 @@ public class ScheduleUserService {
         int currentAssignUserCnt = scheduleUserRepository.countScheduleUserBySchedule(schedule);
 
         if (currentAssignUserCnt + newAssignUserCnt > 5)
-            throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "해당 일정에는 더 이상 유저를 배정할 수 없습니다");
+            throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "일정은 최대 5명의 유저까지만 배정 가능합니다");
     }
 
 }
