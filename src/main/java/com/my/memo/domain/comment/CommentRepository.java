@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    @Query("select c from Comment c where c.schedule = :schedule")
+    @Query("select c from Comment c left join fetch c.user u where c.schedule = :schedule")
     Page<Comment> findCommentsWithUserBySchedule(Schedule schedule, PageRequest pageRequest);
 
     @Modifying

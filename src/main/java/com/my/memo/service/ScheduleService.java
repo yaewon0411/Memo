@@ -135,23 +135,23 @@ public class ScheduleService {
     public ScheduleRespDto findScheduleById(Long scheduleId, int page, int limit, Long userId) {
 
         User userPS = entityValidator.validateAndGetUser(userId);
-
         Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
-        if (!schedulePS.isPublic() && !userPS.getRole().equals(Role.ADMIN)) {
-            if (!schedulePS.getUser().equals(userPS)) {
-                throw new CustomApiException(HttpStatus.FORBIDDEN.value(), "해당 일정에 접근할 권한이 없습니다");
-            }
-        }
+        validateScheduleAccess(schedulePS, userPS);
 
         PageRequest pageRequest = PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "createdAt"));
 
         Page<Comment> commentPage = commentRepository.findCommentsWithUserBySchedule(schedulePS, pageRequest);
-        commentPage.getContent().forEach(c -> c.getUser().getName());
 
         List<ScheduleUser> assignedUserList = scheduleUserRepository.findScheduleUserBySchedule(schedulePS);
 
         return new ScheduleRespDto(schedulePS, commentPage, assignedUserList);
+    }
+
+    private void validateScheduleAccess(Schedule schedule, User user) {
+        if (!schedule.isPublic() && !user.getRole().equals(Role.ADMIN) && !schedule.getUser().equals(user)) {
+            throw new CustomApiException(HttpStatus.FORBIDDEN.value(), "해당 일정에 접근할 권한이 없습니다");
+        }
     }
 
 
