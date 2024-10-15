@@ -1,7 +1,6 @@
 package com.my.memo.domain.scheduleUser;
 
 import com.my.memo.domain.schedule.Schedule;
-import com.my.memo.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,8 +19,8 @@ public interface ScheduleUserRepository extends JpaRepository<ScheduleUser, Long
     List<ScheduleUser> findScheduleUserBySchedule(@Param(value = "schedule") Schedule schedule);
 
     @Modifying(clearAutomatically = true)
-    @Query("delete from ScheduleUser su where su.user = :user or su.schedule in :scheduleList")
-    int deleteByUser(@Param(value = "user") User user, @Param(value = "scheduleList") List<Schedule> scheduleList);
+    @Query("delete from ScheduleUser su where su.user.id = :userId or su.schedule in :scheduleList")
+    int deleteByUserId(@Param(value = "userId") Long userId, @Param(value = "scheduleList") List<Schedule> scheduleList);
 
     @Modifying(clearAutomatically = true)
     @Query("delete from ScheduleUser su where su.schedule = :schedule and su.user.id in :userIdList")

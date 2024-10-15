@@ -38,19 +38,19 @@ public class UserService {
     public UserDeleteRespDto deleteUser(Long userId) {
 
         User userPS = entityValidator.validateAndGetUser(userId);
-        userRepository.findUserWithSchedulesById(userPS.getId());
+        userRepository.findUserWithSchedulesById(userId);
 
-        int deletedAssignedCnt = scheduleUserRepository.deleteByUser(userPS, userPS.getScheduleList());
+        int deletedAssignedCnt = scheduleUserRepository.deleteByUserId(userId, userPS.getScheduleList());
         log.info("해당 유저 ID {} 배정 기록 삭제: 삭제된 개수 {}", userPS.getId(), deletedAssignedCnt);
 
-        int deletedCommentCnt = commentRepository.deleteByUser(userPS);
+        int deletedCommentCnt = commentRepository.deleteByUserId(userId);
         log.info("해당 유저 ID {} 코멘트 삭제: 삭제된 개수 {}", userPS.getId(), deletedCommentCnt);
 
-        int deletedScheduleCnt = scheduleRepository.deleteByUser(userPS);
+        int deletedScheduleCnt = scheduleRepository.deleteByUserId(userId);
         log.info("해당 유저 ID {} 일정 삭제: 삭제된 개수 {}", userPS.getId(), deletedScheduleCnt);
 
-        userRepository.delete(userPS);
-        return new UserDeleteRespDto(true, userPS.getId());
+        userRepository.deleteById(userId);
+        return new UserDeleteRespDto(true, userId);
     }
 
     public UserRespDto getUserInfo(Long userId) {

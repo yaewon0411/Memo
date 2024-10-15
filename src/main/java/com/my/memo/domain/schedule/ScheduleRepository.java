@@ -1,6 +1,5 @@
 package com.my.memo.domain.schedule;
 
-import com.my.memo.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,7 +17,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, Dao {
     int countUserSchedules(@Param(value = "userId") Long userId);
 
     @Modifying(clearAutomatically = true)
-    @Query("delete from Schedule s where s.user = :user")
-    int deleteByUser(@Param(value = "user") User user);
+    @Query("delete from Schedule s where s.user.id = :userId")
+    int deleteByUserId(@Param(value = "userId") Long userId);
 
 }
