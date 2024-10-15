@@ -46,4 +46,5 @@ public class EntityValidator {
                     return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
                 });
     }
+
 }

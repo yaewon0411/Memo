@@ -1,4 +1,4 @@
-package com.my.memo.config.jwt;
+package com.my.memo.config.auth.jwt;
 
 import com.my.memo.domain.user.Role;
 

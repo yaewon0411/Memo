@@ -1,6 +1,6 @@
 package com.my.memo.service;
 
-import com.my.memo.config.jwt.JwtProvider;
+import com.my.memo.config.auth.jwt.JwtProvider;
 import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;

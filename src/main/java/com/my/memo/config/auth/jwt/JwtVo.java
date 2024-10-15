@@ -1,4 +1,4 @@
-package com.my.memo.config.jwt;
+package com.my.memo.config.auth.jwt;
 
 public interface JwtVo {
 

@@ -3,6 +3,7 @@ package com.my.memo.aop;
 import com.my.memo.aop.valid.ValidateEntity;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.schedule.Schedule;
+import com.my.memo.domain.user.User;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.entity.EntityValidator;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,8 @@ public class EntityValidatorAspect {
             return entityValidator.validateAndGetSchedule(id);
         } else if (Comment.class.equals(entityType)) {
             return entityValidator.validateAndGetComment(id);
+        } else if (User.class.equals(entityType)) {
+            return entityValidator.validateAndGetUser(id);
         }
         throw new CustomApiException(HttpStatus.BAD_REQUEST.value(), "지원하지 않는 어쩌고 날릴것");
     }
