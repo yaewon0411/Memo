@@ -74,18 +74,18 @@ public class ScheduleService {
         Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
 
         //코멘트 삭제
-        int deletedCommentCnt = commentRepository.deleteBySchedule(schedulePS);
+        int deletedCommentCnt = commentRepository.deleteByScheduleId(scheduleId);
         log.info("일정 ID {}에 달린 코멘트 삭제 완료: 삭제된 개수 {}", scheduleId, deletedCommentCnt);
 
         //스케줄에 배정된 유저 리스트 삭제
-        int deletedAssignedUserCnt = scheduleUserRepository.deleteBySchedule(schedulePS);
+        int deletedAssignedUserCnt = scheduleUserRepository.deleteByScheduleId(scheduleId);
         log.info("일정 ID {}에 배정된 유저 삭제 완료: 삭제된 개수 {}", scheduleId, deletedAssignedUserCnt);
 
         //해당 스케줄 삭제
         schedulePS.getUser().getScheduleList().remove(schedulePS);
 
         //TODO 하이버네이트 버그로 인해 Cascade.PERSIS와 orphanRemoval=true가 같이 쓰일 때만 고아 객체로 인식되어 제거된다함. 명시적 삭제 필요
-        scheduleRepository.delete(schedulePS);
+        scheduleRepository.deleteById(scheduleId);
 
         return new ScheduleDeleteRespDto(scheduleId, true);
     }

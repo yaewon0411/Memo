@@ -20,8 +20,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     int deleteByUserId(@Param(value = "userId") Long userId);
 
     @Modifying
-    @Query("delete from Comment c where c.schedule = :schedule")
-    int deleteBySchedule(Schedule schedule);
+    @Query("delete from Comment c where c.schedule.id = :scheduleId")
+    int deleteByScheduleId(@Param(value = "scheduleId") Long scheduleId);
 
 
 }

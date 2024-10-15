@@ -85,7 +85,7 @@ public class CommentService {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 댓글에 접근할 권한이 없습니다");
         }
 
-        commentRepository.delete(commentPS);
+        commentRepository.deleteById(commentId);
         log.info("코멘트 삭제 완료: 코멘트 ID {}", commentId);
 
         return new CommentDeleteRespDto(commentId, true);
