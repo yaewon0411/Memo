@@ -20,6 +20,9 @@ public class CustomUtil {
         return om.writeValueAsString(object);
     }
 
+    public static LocalDateTime stringToLocalDateTime(String str) {
+        return LocalDateTime.parse(str + "T00:00:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
 
     public static String localDateTimeToFormattedString(LocalDateTime localDateTime) {
         return localDateTime.format(SCHEDULE_FORMATTER);

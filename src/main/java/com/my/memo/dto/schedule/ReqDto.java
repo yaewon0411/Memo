@@ -1,8 +1,8 @@
 package com.my.memo.dto.schedule;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.user.User;
+import com.my.memo.util.CustomUtil;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -68,13 +68,21 @@ public class ReqDto {
         @Size(min = 1, max = 512, message = "1자에서 512자 사이로 입력해야 합니다")
         private String content;
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-        private LocalDateTime startAt;
+        @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다")
+        private String startAt;
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-        private LocalDateTime endAt;
+        @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다")
+        private String endAt;
 
         private Boolean isPublic;
+
+        public LocalDateTime getStartAt() {
+            return CustomUtil.stringToLocalDateTime(this.startAt);
+        }
+
+        public LocalDateTime getEndAt() {
+            return CustomUtil.stringToLocalDateTime(this.endAt);
+        }
     }
 
     @NoArgsConstructor
@@ -85,19 +93,19 @@ public class ReqDto {
         @Size(min = 1, max = 512, message = "1자에서 512자 사이로 입력해야 합니다")
         private String content;
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-        private LocalDateTime startAt;
+        @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다")
+        private String startAt;
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-        private LocalDateTime endAt;
+        @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "유효하지 않은 날짜 형식입니다")
+        private String endAt;
 
         @NotNull(message = "공개 여부를 선택해야 합니다")
         private Boolean isPublic;
 
         public Schedule toEntity(User user, String weatherOnCreation) {
             return Schedule.builder()
-                    .startAt(this.startAt)
-                    .endAt(this.endAt)
+                    .startAt(CustomUtil.stringToLocalDateTime(this.startAt))
+                    .endAt(CustomUtil.stringToLocalDateTime(this.endAt))
                     .content(this.content)
                     .user(user)
                     .isPublic(this.isPublic)
