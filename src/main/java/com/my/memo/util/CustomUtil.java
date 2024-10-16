@@ -21,7 +21,7 @@ public class CustomUtil {
     }
 
     public static LocalDateTime stringToLocalDateTime(String str) {
-        return LocalDateTime.parse(str + "T00:00:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return LocalDateTime.parse(str, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
     }
 
     public static String localDateTimeToFormattedString(LocalDateTime localDateTime) {
