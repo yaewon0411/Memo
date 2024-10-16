@@ -37,8 +37,9 @@ public class UserService {
     @Transactional
     public UserDeleteRespDto deleteUser(Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(userId);
-        userRepository.findUserWithSchedulesById(userId);
+        User userPS = userRepository.findUserWithSchedulesById(userId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
+        );
 
         int deletedAssignedCnt = scheduleUserRepository.deleteByUserId(userId, userPS.getScheduleList());
         log.info("해당 유저 ID {} 배정 기록 삭제: 삭제된 개수 {}", userPS.getId(), deletedAssignedCnt);

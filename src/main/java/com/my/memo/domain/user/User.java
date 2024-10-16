@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,11 @@ import static com.my.memo.dto.user.ReqDto.UserModifyReqDto;
 @Getter
 @Table(name = "users")
 public class User extends BaseEntity {
+
+    /*
+     * 해당 부분은 JPA 스펙상 원칙적으로 CascadeType.PERSIST이 없어도 orphanRemoval만으로 삭제되어야 하는 것이 맞습니다.
+     * 하이버네이트 구현체에서는 해당 기능에 버그가 있고, 그래서 CascadeType.PERSIST(또는 ALL)이 함께 적용되어야 orphanRemoval이 동작합니다.
+     * */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +42,8 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @BatchSize(size = 10)
+    @OneToMany(mappedBy = "user")
     private List<Schedule> scheduleList = new ArrayList<>();
 
 

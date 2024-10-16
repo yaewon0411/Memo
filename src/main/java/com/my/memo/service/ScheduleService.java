@@ -68,8 +68,8 @@ public class ScheduleService {
     @Transactional
     public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, Long userId) {
 
+        //관리자 검증
         User userPS = entityValidator.validateAndGetUser(userId);
-
         log.info("일정 삭제 시도: 관리자 ID {}", userPS.getId());
 
         //해당 일정 조회
@@ -85,8 +85,6 @@ public class ScheduleService {
 
         //해당 스케줄 삭제
         schedulePS.getUser().getScheduleList().remove(schedulePS);
-
-        //TODO 하이버네이트 버그로 인해 Cascade.PERSIS와 orphanRemoval=true가 같이 쓰일 때만 고아 객체로 인식되어 제거된다함. 명시적 삭제 필요
         scheduleRepository.deleteById(scheduleId);
 
         return new ScheduleDeleteRespDto(scheduleId, true);
