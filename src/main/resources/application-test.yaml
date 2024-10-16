@@ -41,3 +41,7 @@ logging:
   level:
     org.hibernate.orm.jdbc.bind: TRACE
     com.my.memo: DEBUG
+
+
+secret:
+  key: 66eI7JeQ64ukIOumrOy/oCDthqDsv6Drhbgg7Jyg7Jqw7IucIOuztOqzoOyLtuuLpA==
