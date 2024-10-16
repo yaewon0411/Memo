@@ -54,7 +54,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 Long userId = jwtProvider.getUserId(jwt);
 
                 if (requireAuth.role().equals(Role.ADMIN) && !userRole.equals(Role.ADMIN)) {
-                    setErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "관리자 권한이 필요합니다");
+                    setErrorResponse(response, HttpStatus.FORBIDDEN.value(), "관리자 권한이 필요합니다");
                     return false;
                 }
                 request.setAttribute("userId", userId);
@@ -71,7 +71,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private boolean checkTokenPresence(String token, HttpServletResponse response) throws IOException {
         if (token == null || token.isEmpty()) {
-            setErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "권한이 없습니다");
+            setErrorResponse(response, HttpStatus.UNAUTHORIZED.value(), "인증이 필요합니다");
             return false;
         }
         return true;

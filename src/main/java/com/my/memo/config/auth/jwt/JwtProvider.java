@@ -68,7 +68,7 @@ public class JwtProvider {
             return tokenValue.substring(7);
         }
         log.warn("토큰을 찾을 수 없음");
-        throw new CustomJwtException(HttpStatus.NOT_FOUND.value(), "토큰을 찾을 수 없습니다");
+        throw new CustomJwtException(HttpStatus.BAD_REQUEST.value(), "토큰을 찾을 수 없습니다");
     }
 
     public void addJwtToHeader(String token, HttpServletResponse res) {
