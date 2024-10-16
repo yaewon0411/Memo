@@ -42,10 +42,13 @@ public class UserService {
         );
 
         int deletedAssignedCnt = scheduleUserRepository.deleteByUserId(userId, userPS.getScheduleList());
-        log.info("해당 유저 ID {} 배정 기록 삭제: 삭제된 개수 {}", userPS.getId(), deletedAssignedCnt);
+        log.info("유저 ID의 {} 배정 기록 삭제: 삭제된 개수 {}", userPS.getId(), deletedAssignedCnt);
 
         int deletedCommentCnt = commentRepository.deleteByUserId(userId);
-        log.info("해당 유저 ID {} 코멘트 삭제: 삭제된 개수 {}", userPS.getId(), deletedCommentCnt);
+        log.info("유저 ID {} 가 작성한 코멘트 삭제: 삭제된 개수 {}", userPS.getId(), deletedCommentCnt);
+
+        int deletedScheduleCommentCnt = commentRepository.deleteBySchedules(userPS.getScheduleList());
+        log.info("유저 ID {} 가 생성한 일정에 달린 모든 코멘트 삭제: 삭제된 개수 {}", userId, deletedScheduleCommentCnt);
 
         int deletedScheduleCnt = scheduleRepository.deleteByUserId(userId);
         log.info("해당 유저 ID {} 일정 삭제: 삭제된 개수 {}", userPS.getId(), deletedScheduleCnt);

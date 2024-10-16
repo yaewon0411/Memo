@@ -10,6 +10,7 @@ import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
+import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.util.CustomUtil;
 import com.my.memo.util.entity.EntityValidator;
@@ -40,6 +41,7 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final CommentRepository commentRepository;
     private final ScheduleUserRepository scheduleUserRepository;
+    private final UserRepository userRepository;
     private final EntityValidator entityValidator;
     private final WeatherClient weatherClient;
     private final Clock clock;
@@ -69,22 +71,25 @@ public class ScheduleService {
     public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, Long userId) {
 
         //관리자 검증
-        User userPS = entityValidator.validateAndGetUser(userId);
-        log.info("일정 삭제 시도: 관리자 ID {}", userPS.getId());
+        User adminPS = entityValidator.validateAndGetUser(userId);
+        log.info("일정 삭제 시도: 관리자 ID {}", adminPS.getId());
 
         //해당 일정 조회
-        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
+        Schedule schedulePS = scheduleRepository.findScheduleWithCommentsById(scheduleId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
+        );
 
-        //코멘트 삭제
-        int deletedCommentCnt = commentRepository.deleteByScheduleId(scheduleId);
-        log.info("일정 ID {}에 달린 코멘트 삭제 완료: 삭제된 개수 {}", scheduleId, deletedCommentCnt);
+        //작성자 조회
+        User userPS = userRepository.findUserWithSchedulesById(schedulePS.getUser().getId()).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "작성자 정보를 찾을 수 없습니다")
+        );
 
         //스케줄에 배정된 유저 리스트 삭제
         int deletedAssignedUserCnt = scheduleUserRepository.deleteByScheduleId(scheduleId);
         log.info("일정 ID {}에 배정된 유저 삭제 완료: 삭제된 개수 {}", scheduleId, deletedAssignedUserCnt);
 
         //해당 스케줄 삭제
-        schedulePS.getUser().getScheduleList().remove(schedulePS);
+        userPS.getScheduleList().remove(schedulePS);
         scheduleRepository.deleteById(scheduleId);
 
         return new ScheduleDeleteRespDto(scheduleId, true);

@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
@@ -20,8 +22,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     int deleteByUserId(@Param(value = "userId") Long userId);
 
     @Modifying
-    @Query("delete from Comment c where c.schedule.id = :scheduleId")
-    int deleteByScheduleId(@Param(value = "scheduleId") Long scheduleId);
+    @Query("delete from Comment c where c.schedule in :scheduleList")
+    int deleteBySchedules(@Param(value = "scheduleList") List<Schedule> scheduleList);
 
 
 }

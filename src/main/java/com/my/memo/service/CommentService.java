@@ -3,6 +3,7 @@ package com.my.memo.service;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.Schedule;
+import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.ex.CustomApiException;
@@ -24,6 +25,7 @@ import static com.my.memo.dto.comment.RespDto.*;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final ScheduleRepository scheduleRepository;
     private final EntityValidator entityValidator;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -76,7 +78,9 @@ public class CommentService {
 
         User userPS = entityValidator.validateAndGetUser(userId);
 
-        entityValidator.validateAndGetSchedule(scheduleId);
+        Schedule schedulePS = scheduleRepository.findScheduleWithCommentsById(scheduleId).orElseThrow(
+                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
+        );
 
         Comment commentPS = entityValidator.validateAndGetComment(commentId);
 
@@ -85,6 +89,7 @@ public class CommentService {
             throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 댓글에 접근할 권한이 없습니다");
         }
 
+        schedulePS.getCommentList().remove(commentPS);
         commentRepository.deleteById(commentId);
         log.info("코멘트 삭제 완료: 코멘트 ID {}", commentId);
 

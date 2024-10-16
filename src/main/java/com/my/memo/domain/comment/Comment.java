@@ -34,10 +34,12 @@ public class Comment extends BaseEntity {
     private Schedule schedule;
 
     @Builder
-    public Comment(String content, User user, Schedule schedule) {
+    public Comment(String content, User user, Schedule schedule, Long id) {
         this.content = content;
         this.user = user;
         this.schedule = schedule;
+        this.id = id;
+        schedule.getCommentList().add(this);
     }
 
     public void modify(CommentModifyReqDto commentModifyReqDto) {

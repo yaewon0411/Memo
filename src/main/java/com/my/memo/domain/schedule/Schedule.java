@@ -1,6 +1,7 @@
 package com.my.memo.domain.schedule;
 
 import com.my.memo.domain.base.BaseEntity;
+import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -9,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.my.memo.dto.schedule.ReqDto.ScheduleModifyReqDto;
 
@@ -35,6 +38,9 @@ public class Schedule extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
     private String weatherOnCreation;
+
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.REMOVE)
+    private List<Comment> commentList = new ArrayList<>();
 
     @Builder
     public Schedule(Long id, String content, LocalDateTime startAt, LocalDateTime endAt, boolean isPublic, User user, String weatherOnCreation) {

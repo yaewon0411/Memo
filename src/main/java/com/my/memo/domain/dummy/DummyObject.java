@@ -1,6 +1,8 @@
 package com.my.memo.domain.dummy;
 
+import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.schedule.Schedule;
+import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.util.CustomPasswordUtil;
@@ -8,6 +10,21 @@ import com.my.memo.util.CustomPasswordUtil;
 import java.time.LocalDateTime;
 
 public class DummyObject {
+
+    public ScheduleUser mockScheduleUser(User user, Schedule schedule) {
+        return ScheduleUser.builder()
+                .user(user)
+                .schedule(schedule)
+                .build();
+    }
+
+    public Comment newComment(User user, Schedule schedule, Long id) {
+        return Comment.builder()
+                .user(user)
+                .id(id)
+                .schedule(schedule)
+                .build();
+    }
 
     public User newUser(String email, Long id) {
         return User.builder()
