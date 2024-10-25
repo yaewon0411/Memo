@@ -40,7 +40,7 @@ public class CommentService {
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
 
         //공개 일정이 아닌데 & 관리자도 아니면 -> 댓글 작성 불가
-        if (!schedulePS.isPublic() && !userPS.isAdmin()) {
+        if (!schedulePS.isOwner(userPS) & !schedulePS.isPublic() && !userPS.isAdmin()) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
         //코멘트 저장

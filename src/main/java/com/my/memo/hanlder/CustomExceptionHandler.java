@@ -33,7 +33,7 @@ public class CustomExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResult<ApiError>> handleGeneralException(Exception e) {
         log.error("예기치 못한 오류 발생: {}", e.getMessage(), e);
-        return new ResponseEntity<>(ApiResult.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 에러가 발생했습니다"), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(ApiResult.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 에러가 발생했습니다. 잠시 후 다시 시도해주세요"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -61,7 +61,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(CustomApiException.class)
     public ResponseEntity<ApiResult<ApiError>> apiException(CustomApiException e) {
-        return new ResponseEntity<>(ApiResult.error(e.getStatus(), e.getMsg()), HttpStatusCode.valueOf(e.getStatus()));
+        return new ResponseEntity<>(ApiResult.error(e.getErrorCode().getStatus(), e.getMessage()), HttpStatusCode.valueOf(e.getErrorCode().getStatus()));
     }
 
 
