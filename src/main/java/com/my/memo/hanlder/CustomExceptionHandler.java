@@ -30,6 +30,11 @@ public class CustomExceptionHandler {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResult<ApiError>> handleGeneralException(Exception e) {
+        return new ResponseEntity<>(ApiResult.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 에러가 발생했습니다"), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResult<ApiError>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
         String errorMsg = String.format("잘못된 HTTP 메서드를 사용했습니다. 가능한 HTTP 메서드: %s", e.getSupportedHttpMethods());
