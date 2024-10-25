@@ -38,7 +38,7 @@ public class CommentService {
         //일정 찾기
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
         //관리자도 아니고 & 공개 일정도 아니고 & 해당 일정 만든 본인도 아니면
-        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.isPublic() && !schedulePS.getUser().equals(userPS)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.isPublic() && !schedulePS.getUser().getId().equals(userId)) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
         //코멘트 저장
