@@ -53,6 +53,10 @@ public class Schedule extends BaseEntity {
         user.getScheduleList().add(this);
     }
 
+    public boolean isOwner(User user) {
+        return this.user.getId().equals(user.getId());
+    }
+
 
     public void modify(ScheduleModifyReqDto scheduleModifyReqDto) {
         if (scheduleModifyReqDto.getContent() != null)
