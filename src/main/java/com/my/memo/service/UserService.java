@@ -1,5 +1,6 @@
 package com.my.memo.service;
 
+import com.my.memo.aop.valid.RequireAuthenticatedUser;
 import com.my.memo.config.auth.jwt.JwtProvider;
 import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.ScheduleRepository;
@@ -34,6 +35,7 @@ public class UserService {
 
 
     @Transactional
+    @RequireAuthenticatedUser
     public UserDeleteRespDto deleteUser(Long userId) {
 
         User userPS = userRepository.findUserWithSchedulesById(userId).orElseThrow(
@@ -56,6 +58,7 @@ public class UserService {
         return new UserDeleteRespDto(true, userId);
     }
 
+    @RequireAuthenticatedUser
     public UserRespDto getUserInfo(Long userId) {
         User userPS = findByIdOrFail(userId);
         return new UserRespDto(userPS);
@@ -63,6 +66,7 @@ public class UserService {
 
 
     @Transactional
+    @RequireAuthenticatedUser
     public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, Long userId) {
         User userPS = findByIdOrFail(userId);
         //수정 요청한 이메일이 사용중인 이메일인지 검사
@@ -100,10 +104,6 @@ public class UserService {
     }
 
     public User findByIdOrFail(Long userId) {
-
-//        if (userId == null) { //이거는 aop에 위임하는게 나을듯
-//            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
-//        }
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);

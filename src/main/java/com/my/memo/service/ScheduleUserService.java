@@ -1,5 +1,6 @@
 package com.my.memo.service;
 
+import com.my.memo.aop.valid.RequireAuthenticatedUser;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
@@ -33,6 +34,7 @@ public class ScheduleUserService {
 
 
     @Transactional
+    @RequireAuthenticatedUser
     public AssignedUserDeleteRespDto deleteAssignedUser(Long scheduleId, AssignedUserDeleteReqDto assignedUserDeleteReqDto, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
@@ -54,6 +56,7 @@ public class ScheduleUserService {
     }
 
     @Transactional
+    @RequireAuthenticatedUser
     public UserAssignRespDto assignUserToSchedule(Long scheduleId, UserAssignReqDto userAssignReqDto, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);

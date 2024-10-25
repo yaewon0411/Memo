@@ -1,5 +1,6 @@
 package com.my.memo.service;
 
+import com.my.memo.aop.valid.RequireAuthenticatedUser;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.Schedule;
@@ -32,6 +33,7 @@ public class CommentService {
 
     //댓글 저장
     @Transactional
+    @RequireAuthenticatedUser
     public CommentCreateRespDto createComment(Long scheduleId, CommentCreateReqDto commentReqDto, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
@@ -48,6 +50,7 @@ public class CommentService {
 
     // 댓글 수정
     @Transactional
+    @RequireAuthenticatedUser
     public CommentModifyRespDto updateComment(Long scheduleId, Long commentId, CommentModifyReqDto commentModifyReqDto, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
@@ -69,6 +72,7 @@ public class CommentService {
 
     //댓글 삭제
     @Transactional
+    @RequireAuthenticatedUser
     public CommentDeleteRespDto deleteComment(Long scheduleId, Long commentId, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);

@@ -1,5 +1,6 @@
 package com.my.memo.service;
 
+import com.my.memo.aop.valid.RequireAuthenticatedUser;
 import com.my.memo.client.weather.WeatherClient;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.comment.CommentRepository;
@@ -68,6 +69,7 @@ public class ScheduleService {
 
     // 일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
+    @RequireAuthenticatedUser
     public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, Long userId) {
 
         //관리자 검증
@@ -95,6 +97,7 @@ public class ScheduleService {
 
     //일정 작성자가 누구던 간에 관리자는 해당 일정 수정/삭제 가능함
     @Transactional
+    @RequireAuthenticatedUser
     public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
@@ -107,6 +110,7 @@ public class ScheduleService {
         return new ScheduleModifyRespDto(schedulePS);
     }
 
+    @RequireAuthenticatedUser
     public UserScheduleListRespDto findUserSchedules(UserScheduleFilter userScheduleFilter, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
@@ -128,7 +132,7 @@ public class ScheduleService {
         return new UserScheduleListRespDto(scheduleList, hasNextPage, userPS, totalUserSchedules, totalPages, currentPage);
     }
 
-
+    @RequireAuthenticatedUser
     public ScheduleRespDto findScheduleById(Long scheduleId, int page, int limit, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
@@ -150,6 +154,7 @@ public class ScheduleService {
     }
 
     @Transactional
+    @RequireAuthenticatedUser
     public ScheduleCreateRespDto createSchedule(ScheduleCreateReqDto scheduleCreateReqDto, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
