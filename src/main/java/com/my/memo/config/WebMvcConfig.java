@@ -1,7 +1,7 @@
 package com.my.memo.config;
 
 import com.my.memo.config.auth.AuthInterceptor;
-import com.my.memo.config.user.UserIdArgumentResolver;
+import com.my.memo.config.auth.UserIdArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

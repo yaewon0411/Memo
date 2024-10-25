@@ -1,5 +1,6 @@
-package com.my.memo.config.user;
+package com.my.memo.config.auth;
 
+import com.my.memo.config.auth.valid.UserId;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;

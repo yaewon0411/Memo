@@ -1,4 +1,4 @@
-package com.my.memo.config.user;
+package com.my.memo.config.auth.valid;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

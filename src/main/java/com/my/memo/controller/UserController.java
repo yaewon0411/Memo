@@ -2,7 +2,7 @@ package com.my.memo.controller;
 
 import com.my.memo.config.auth.jwt.JwtVo;
 import com.my.memo.config.auth.jwt.RequireAuth;
-import com.my.memo.config.user.UserId;
+import com.my.memo.config.auth.valid.UserId;
 import com.my.memo.domain.user.Role;
 import com.my.memo.dto.user.req.JoinReqDto;
 import com.my.memo.dto.user.req.LoginReqDto;
