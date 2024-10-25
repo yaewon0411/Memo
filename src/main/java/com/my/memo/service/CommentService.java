@@ -7,11 +7,10 @@ import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.ex.CustomApiException;
-import com.my.memo.util.entity.EntityValidator;
+import com.my.memo.ex.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +25,8 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final ScheduleRepository scheduleRepository;
-    private final EntityValidator entityValidator;
+    private final UserService userService;
+    private final ScheduleService scheduleService;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -34,18 +34,15 @@ public class CommentService {
     @Transactional
     public CommentCreateRespDto createComment(Long scheduleId, CommentCreateReqDto commentReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(userId);
-
+        User userPS = userService.findByIdOrFail(userId);
         //일정 찾기
-        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
-
+        Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
         //관리자도 아니고 & 공개 일정도 아니고 & 해당 일정 만든 본인도 아니면
-        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.isPublic() && !schedulePS.getUser().equals(userPS))
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 일정에 접근할 수 없습니다");
-
+        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.isPublic() && !schedulePS.getUser().equals(userPS)) {
+            throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
+        }
         //코멘트 저장
         Comment commentPS = commentRepository.save(commentReqDto.toEntity(userPS, schedulePS));
-
         return new CommentCreateRespDto(commentPS);
     }
 
@@ -53,19 +50,15 @@ public class CommentService {
     @Transactional
     public CommentModifyRespDto updateComment(Long scheduleId, Long commentId, CommentModifyReqDto commentModifyReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(userId);
-
-        entityValidator.validateAndGetSchedule(scheduleId);
-
-        Comment commentPS = entityValidator.validateAndGetComment(commentId);
+        User userPS = userService.findByIdOrFail(userId);
+        scheduleService.findByIdOrFail(scheduleId);
+        Comment commentPS = findByIdOrFail(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
         if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().getId().equals(userId)) {
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 댓글에 접근할 권한이 없습니다");
+            throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
         }
-
         commentPS.modify(commentModifyReqDto);
-
         commentRepository.saveAndFlush(commentPS);
         log.info("코멘트 수정 완료: 코멘트 ID {}", commentPS.getId());
 
@@ -76,24 +69,27 @@ public class CommentService {
     @Transactional
     public CommentDeleteRespDto deleteComment(Long scheduleId, Long commentId, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(userId);
-
+        User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleRepository.findScheduleWithCommentsById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
+                () -> new CustomApiException(ErrorCode.SCHEDULE_NOT_FOUND)
         );
-
-        Comment commentPS = entityValidator.validateAndGetComment(commentId);
+        Comment commentPS = findByIdOrFail(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
         if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().getId().equals(userId)) {
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "해당 댓글에 접근할 권한이 없습니다");
+            throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
         }
-
         schedulePS.getCommentList().remove(commentPS);
         commentRepository.deleteById(commentId);
         log.info("코멘트 삭제 완료: 코멘트 ID {}", commentId);
 
         return new CommentDeleteRespDto(commentId, true);
+    }
+
+    public Comment findByIdOrFail(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(
+                () -> new CustomApiException(ErrorCode.COMMENT_NOT_FOUND)
+        );
     }
 
 

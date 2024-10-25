@@ -43,7 +43,6 @@ public class Comment extends BaseEntity {
     }
 
     public void modify(CommentModifyReqDto commentModifyReqDto) {
-        if (commentModifyReqDto.getContent() != null)
-            this.content = commentModifyReqDto.getContent();
+        this.content = commentModifyReqDto.getContent();
     }
 }
