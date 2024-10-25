@@ -39,7 +39,7 @@ public class ScheduleUserService {
 
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
-        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(userPS)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().getId().equals(userId)) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
         //일정에서 삭제할 유저 아이디 리스트
@@ -60,7 +60,7 @@ public class ScheduleUserService {
 
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
-        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().equals(userPS)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().getId().equals(userId)) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
         //최대 인원 검사
