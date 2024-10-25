@@ -64,7 +64,7 @@ public class CommentService {
         validateCommentAccess(userPS, commentPS);
 
         commentPS.modify(commentModifyReqDto);
-        commentRepository.saveAndFlush(commentPS);
+        commentRepository.save(commentPS);
         log.info("코멘트 수정 완료: 코멘트 ID {}", commentPS.getId());
 
         return new CommentModifyRespDto(commentPS);
