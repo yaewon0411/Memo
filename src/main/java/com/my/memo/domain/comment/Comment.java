@@ -42,7 +42,7 @@ public class Comment extends BaseEntity {
     }
 
     public boolean isAuthor(User user) {
-        return !this.user.getId().equals(user.getId());
+        return this.user.getId().equals(user.getId());
     }
 
     public void modify(CommentModifyReqDto commentModifyReqDto) {
