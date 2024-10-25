@@ -8,7 +8,6 @@ import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto;
 import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
-import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.dto.schedule.req.PublicScheduleFilter;
@@ -77,12 +76,10 @@ public class ScheduleService {
 
         //해당 일정 조회
         Schedule schedulePS = scheduleRepository.findScheduleWithCommentsById(scheduleId).orElseThrow(
-                () -> new CustomApiException(ErrorCode.SCHEDULE_NOT_FOUND)
-        );
+                () -> new CustomApiException(ErrorCode.SCHEDULE_NOT_FOUND));
         //작성자 조회
         User userPS = userRepository.findUserWithSchedulesById(schedulePS.getUser().getId()).orElseThrow(
-                () -> new CustomApiException(ErrorCode.AUTHOR_NOT_FOUND)
-        );
+                () -> new CustomApiException(ErrorCode.AUTHOR_NOT_FOUND));
 
         //스케줄에 배정된 유저 리스트 삭제
         int deletedAssignedUserCnt = scheduleUserRepository.deleteByScheduleId(scheduleId);
@@ -147,7 +144,7 @@ public class ScheduleService {
     }
 
     private void validateScheduleAccess(Schedule schedule, User user) {
-        if (!schedule.isPublic() && !user.getRole().equals(Role.ADMIN) && !schedule.isOwner(user)) {
+        if (!schedule.isPublic() && !user.isAdmin() && !schedule.isOwner(user)) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
     }
