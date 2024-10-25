@@ -37,9 +37,9 @@ public class ScheduleUserService {
 
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
-        if (!userPS.isAdmin() && !schedulePS.isOwner(userPS)) {
-            throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
-        }
+        //일정 접근 권한 검사
+        validateScheduleAccess(userPS, schedulePS);
+
         //일정에서 삭제할 유저 아이디 리스트
         List<Long> userIdListToDelete = assignedUserDeleteReqDto.getUserIdList().stream().map(AssignedUserDeleteReqDto.UserDto::getUserId).toList();
         //실제로 해당 일정에 배정되어 있는 유저인지 검증
@@ -58,11 +58,10 @@ public class ScheduleUserService {
 
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
-        if (!userPS.isAdmin() && !schedulePS.isOwner(userPS)) {
-            throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
-        }
+        //일정 접근 권한 검사
+        validateScheduleAccess(userPS, schedulePS);
         //최대 인원 검사
-        validateScheduleUserLimit(schedulePS, userAssignReqDto.getUserIdList().size());
+        validateScheduleUserLimit(schedulePS, userAssignReqDto);
 
         List<Long> userIdListToAssign = userAssignReqDto.getUserIdList().stream()
                 .map(UserAssignReqDto.UserDto::getUserId)
@@ -70,10 +69,8 @@ public class ScheduleUserService {
 
         //이미 일정에 배정된 유저인지 검사
         Set<Long> assignedUserIdSet = scheduleUserRepository.getAssignedUserIdsBySchedule(schedulePS);
-        for (Long userIdToAssign : userIdListToAssign) {
-            if (assignedUserIdSet.contains(userIdToAssign))
-                throw new CustomApiException(ErrorCode.USER_ALREADY_ASSIGNED_TO_SCHEDULE);
-        }
+        validateUsersNotAlreadyAssigned(assignedUserIdSet, userIdListToAssign);
+
         //유저 목록 조회
         List<User> userListToAssign = userRepository.findAllById(userIdListToAssign);
         if (userListToAssign.size() != userIdListToAssign.size()) {
@@ -87,10 +84,26 @@ public class ScheduleUserService {
     }
 
     //최대 인원으로 배정되었는지 검사
-    private void validateScheduleUserLimit(Schedule schedule, int newAssignUserCnt) {
+    private void validateScheduleUserLimit(Schedule schedule, UserAssignReqDto userAssignReqDto) {
+        int newAssignUserCnt = userAssignReqDto.getUserIdList().size();
         int currentAssignUserCnt = scheduleUserRepository.countScheduleUserBySchedule(schedule);
+
         if (currentAssignUserCnt + newAssignUserCnt > 5)
             throw new CustomApiException(ErrorCode.SCHEDULE_USER_LIMIT_EXCEEDED);
+    }
+
+    private void validateScheduleAccess(User user, Schedule schedule) {
+        if (!user.isAdmin() && !schedule.isOwner(user)) {
+            throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
+        }
+    }
+
+    private void validateUsersNotAlreadyAssigned(Set<Long> assignedUserIdSet, List<Long> userIdListToAssign) {
+        for (Long userIdToAssign : userIdListToAssign) {
+            if (assignedUserIdSet.contains(userIdToAssign)) {
+                throw new CustomApiException(ErrorCode.USER_ALREADY_ASSIGNED_TO_SCHEDULE);
+            }
+        }
     }
 
 }
