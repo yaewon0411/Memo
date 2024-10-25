@@ -11,6 +11,11 @@ import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
+import com.my.memo.dto.schedule.req.PublicScheduleFilter;
+import com.my.memo.dto.schedule.req.ScheduleCreateReqDto;
+import com.my.memo.dto.schedule.req.ScheduleModifyReqDto;
+import com.my.memo.dto.schedule.req.UserScheduleFilter;
+import com.my.memo.dto.schedule.resp.*;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.ErrorCode;
 import com.my.memo.util.CustomUtil;
@@ -26,9 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.my.memo.dto.schedule.ReqDto.*;
-import static com.my.memo.dto.schedule.RespDto.*;
 
 
 @RequiredArgsConstructor

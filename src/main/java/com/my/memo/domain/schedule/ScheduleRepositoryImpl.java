@@ -3,6 +3,8 @@ package com.my.memo.domain.schedule;
 
 import com.my.memo.domain.schedule.dto.ScheduleWithCommentAndUserCountsDto;
 import com.my.memo.domain.user.User;
+import com.my.memo.dto.schedule.req.PublicScheduleFilter;
+import com.my.memo.dto.schedule.req.UserScheduleFilter;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.my.memo.dto.schedule.ReqDto.PublicScheduleFilter;
-import static com.my.memo.dto.schedule.ReqDto.UserScheduleFilter;
 
 interface Dao {
     List<ScheduleWithCommentAndUserCountsDto> findPublicSchedulesWithFilters(PublicScheduleFilter publicScheduleFilter);

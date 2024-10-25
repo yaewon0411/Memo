@@ -6,6 +6,11 @@ import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
+import com.my.memo.dto.comment.req.CommentCreateReqDto;
+import com.my.memo.dto.comment.req.CommentModifyReqDto;
+import com.my.memo.dto.comment.resp.CommentCreateRespDto;
+import com.my.memo.dto.comment.resp.CommentDeleteRespDto;
+import com.my.memo.dto.comment.resp.CommentModifyRespDto;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.my.memo.dto.comment.ReqDto.CommentCreateReqDto;
-import static com.my.memo.dto.comment.ReqDto.CommentModifyReqDto;
-import static com.my.memo.dto.comment.RespDto.*;
 
 @Service
 @RequiredArgsConstructor

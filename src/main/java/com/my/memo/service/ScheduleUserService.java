@@ -6,6 +6,8 @@ import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
+import com.my.memo.dto.scheduleUser.req.AssignedUserDeleteReqDto;
+import com.my.memo.dto.scheduleUser.req.UserAssignReqDto;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 
-import static com.my.memo.dto.scheduleUser.ReqDto.AssignedUserDeleteReqDto;
-import static com.my.memo.dto.scheduleUser.ReqDto.UserAssignReqDto;
 import static com.my.memo.dto.scheduleUser.RespDto.AssignedUserDeleteRespDto;
 import static com.my.memo.dto.scheduleUser.RespDto.UserAssignRespDto;
 

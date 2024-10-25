@@ -3,13 +3,12 @@ package com.my.memo.domain.comment;
 import com.my.memo.domain.base.BaseEntity;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.user.User;
+import com.my.memo.dto.comment.req.CommentModifyReqDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import static com.my.memo.dto.comment.ReqDto.CommentModifyReqDto;
 
 
 @Entity

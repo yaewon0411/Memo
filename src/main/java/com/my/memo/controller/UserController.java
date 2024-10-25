@@ -4,6 +4,10 @@ import com.my.memo.config.auth.jwt.JwtVo;
 import com.my.memo.config.auth.jwt.RequireAuth;
 import com.my.memo.config.user.UserId;
 import com.my.memo.domain.user.Role;
+import com.my.memo.dto.user.req.JoinReqDto;
+import com.my.memo.dto.user.req.LoginReqDto;
+import com.my.memo.dto.user.req.UserModifyReqDto;
+import com.my.memo.dto.user.resp.*;
 import com.my.memo.service.UserService;
 import com.my.memo.util.api.ApiResult;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,9 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import static com.my.memo.dto.user.ReqDto.*;
-import static com.my.memo.dto.user.RespDto.*;
 
 @RestController
 @RequiredArgsConstructor

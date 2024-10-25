@@ -3,6 +3,20 @@ package com.my.memo.controller;
 import com.my.memo.config.auth.jwt.RequireAuth;
 import com.my.memo.config.user.UserId;
 import com.my.memo.domain.user.Role;
+import com.my.memo.dto.comment.req.CommentCreateReqDto;
+import com.my.memo.dto.comment.req.CommentModifyReqDto;
+import com.my.memo.dto.comment.resp.CommentCreateRespDto;
+import com.my.memo.dto.comment.resp.CommentDeleteRespDto;
+import com.my.memo.dto.comment.resp.CommentModifyRespDto;
+import com.my.memo.dto.schedule.req.PublicScheduleFilter;
+import com.my.memo.dto.schedule.req.ScheduleCreateReqDto;
+import com.my.memo.dto.schedule.req.ScheduleModifyReqDto;
+import com.my.memo.dto.schedule.req.UserScheduleFilter;
+import com.my.memo.dto.schedule.resp.*;
+import com.my.memo.dto.scheduleUser.req.AssignedUserDeleteReqDto;
+import com.my.memo.dto.scheduleUser.req.UserAssignReqDto;
+import com.my.memo.dto.scheduleUser.resp.AssignedUserDeleteRespDto;
+import com.my.memo.dto.scheduleUser.resp.UserAssignRespDto;
 import com.my.memo.service.CommentService;
 import com.my.memo.service.ScheduleService;
 import com.my.memo.service.ScheduleUserService;
@@ -14,17 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import static com.my.memo.dto.comment.ReqDto.CommentCreateReqDto;
-import static com.my.memo.dto.comment.ReqDto.CommentModifyReqDto;
-import static com.my.memo.dto.comment.RespDto.*;
-import static com.my.memo.dto.schedule.ReqDto.*;
-import static com.my.memo.dto.schedule.RespDto.*;
-import static com.my.memo.dto.scheduleUser.ReqDto.AssignedUserDeleteReqDto;
-import static com.my.memo.dto.scheduleUser.ReqDto.UserAssignReqDto;
-import static com.my.memo.dto.scheduleUser.RespDto.AssignedUserDeleteRespDto;
-import static com.my.memo.dto.scheduleUser.RespDto.UserAssignRespDto;
-
 
 @RequiredArgsConstructor
 @RestController

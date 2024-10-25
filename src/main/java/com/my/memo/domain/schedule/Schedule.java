@@ -3,6 +3,7 @@ package com.my.memo.domain.schedule;
 import com.my.memo.domain.base.BaseEntity;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.user.User;
+import com.my.memo.dto.schedule.req.ScheduleModifyReqDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,8 +13,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.my.memo.dto.schedule.ReqDto.ScheduleModifyReqDto;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

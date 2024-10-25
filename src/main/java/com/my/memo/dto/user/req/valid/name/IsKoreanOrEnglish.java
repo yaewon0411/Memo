@@ -1,4 +1,4 @@
-package com.my.memo.dto.user.valid.name;
+package com.my.memo.dto.user.req.valid.name;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

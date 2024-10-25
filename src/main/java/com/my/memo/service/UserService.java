@@ -6,6 +6,10 @@ import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
+import com.my.memo.dto.user.req.JoinReqDto;
+import com.my.memo.dto.user.req.LoginReqDto;
+import com.my.memo.dto.user.req.UserModifyReqDto;
+import com.my.memo.dto.user.resp.*;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.ErrorCode;
 import com.my.memo.util.CustomPasswordUtil;
@@ -14,9 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.my.memo.dto.user.ReqDto.*;
-import static com.my.memo.dto.user.RespDto.*;
 
 
 @Service
