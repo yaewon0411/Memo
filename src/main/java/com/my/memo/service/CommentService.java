@@ -4,7 +4,6 @@ import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.comment.CommentRepository;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.schedule.ScheduleRepository;
-import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.dto.comment.req.CommentCreateReqDto;
 import com.my.memo.dto.comment.req.CommentModifyReqDto;
@@ -36,10 +35,10 @@ public class CommentService {
     public CommentCreateRespDto createComment(Long scheduleId, CommentCreateReqDto commentReqDto, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
-        //일정 찾기
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
-        //관리자도 아니고 & 공개 일정도 아니고 & 해당 일정 만든 본인도 아니면
-        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.isPublic() && !schedulePS.getUser().getId().equals(userId)) {
+
+        //공개 일정이 아닌데 & 관리자도 아니면 -> 댓글 작성 불가
+        if (!schedulePS.isPublic() && !userPS.isAdmin()) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
         //코멘트 저장
@@ -52,13 +51,15 @@ public class CommentService {
     public CommentModifyRespDto updateComment(Long scheduleId, Long commentId, CommentModifyReqDto commentModifyReqDto, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
-        scheduleService.findByIdOrFail(scheduleId);
+        Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
         Comment commentPS = findByIdOrFail(commentId);
 
+        //해당 스케줄에 달린 댓글이 맞는지 확인
+        isCommentInSchedule(schedulePS, commentPS);
+
         //관리자가 아니라면 댓글 작성자 본인이여야 함
-        if (!userPS.getRole().equals(Role.ADMIN) && commentPS.isAuthor(userPS)) {
-            throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
-        }
+        validateCommentAccess(userPS, commentPS);
+
         commentPS.modify(commentModifyReqDto);
         commentRepository.saveAndFlush(commentPS);
         log.info("코멘트 수정 완료: 코멘트 ID {}", commentPS.getId());
@@ -71,15 +72,16 @@ public class CommentService {
     public CommentDeleteRespDto deleteComment(Long scheduleId, Long commentId, Long userId) {
 
         User userPS = userService.findByIdOrFail(userId);
-        Schedule schedulePS = scheduleRepository.findScheduleWithCommentsById(scheduleId).orElseThrow(
-                () -> new CustomApiException(ErrorCode.SCHEDULE_NOT_FOUND)
-        );
+        Schedule schedulePS = scheduleRepository.findScheduleWithCommentsById(scheduleId)
+                .orElseThrow(() -> new CustomApiException(ErrorCode.SCHEDULE_NOT_FOUND));
         Comment commentPS = findByIdOrFail(commentId);
 
+        //해당 스케줄에 달린 댓글이 맞는지 확인
+        isCommentInSchedule(schedulePS, commentPS);
+
         //관리자가 아니라면 댓글 작성자 본인이여야 함
-        if (!userPS.getRole().equals(Role.ADMIN) && commentPS.isAuthor(userPS)) {
-            throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
-        }
+        validateCommentAccess(userPS, commentPS);
+
         schedulePS.getCommentList().remove(commentPS);
         commentRepository.deleteById(commentId);
         log.info("코멘트 삭제 완료: 코멘트 ID {}", commentId);
@@ -91,6 +93,18 @@ public class CommentService {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new CustomApiException(ErrorCode.COMMENT_NOT_FOUND)
         );
+    }
+
+    private void isCommentInSchedule(Schedule schedule, Comment comment) {
+        if (!schedule.getCommentList().contains(comment)) {
+            throw new CustomApiException(ErrorCode.COMMENT_NOT_IN_SCHEDULE);
+        }
+    }
+
+    private void validateCommentAccess(User user, Comment comment) {
+        if (!user.isAdmin() && !comment.isAuthor(user)) {
+            throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
+        }
     }
 
 

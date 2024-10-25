@@ -3,11 +3,12 @@ package com.my.memo.service;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.scheduleUser.ScheduleUser;
 import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
-import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.dto.scheduleUser.req.AssignedUserDeleteReqDto;
 import com.my.memo.dto.scheduleUser.req.UserAssignReqDto;
+import com.my.memo.dto.scheduleUser.resp.AssignedUserDeleteRespDto;
+import com.my.memo.dto.scheduleUser.resp.UserAssignRespDto;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
-
-import static com.my.memo.dto.scheduleUser.RespDto.AssignedUserDeleteRespDto;
-import static com.my.memo.dto.scheduleUser.RespDto.UserAssignRespDto;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +37,7 @@ public class ScheduleUserService {
 
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
-        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().getId().equals(userId)) {
+        if (!userPS.isAdmin() && !schedulePS.isOwner(userPS)) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
         //일정에서 삭제할 유저 아이디 리스트
@@ -60,7 +58,7 @@ public class ScheduleUserService {
 
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
-        if (!userPS.getRole().equals(Role.ADMIN) && !schedulePS.getUser().getId().equals(userId)) {
+        if (!userPS.isAdmin() && !schedulePS.isOwner(userPS)) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
         //최대 인원 검사

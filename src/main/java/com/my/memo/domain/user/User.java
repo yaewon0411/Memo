@@ -65,4 +65,8 @@ public class User extends BaseEntity {
 
     }
 
+    public boolean isAdmin() {
+        return this.role.equals(Role.ADMIN);
+    }
+
 }

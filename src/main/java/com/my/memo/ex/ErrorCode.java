@@ -18,7 +18,8 @@ public enum ErrorCode {
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다"),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 댓글은 존재하지 않습니다"),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다"),
-    SCHEDULE_USER_LIMIT_EXCEEDED(400, "일정은 최대 5명의 유저까지만 배정 가능합니다");
+    SCHEDULE_USER_LIMIT_EXCEEDED(400, "일정은 최대 5명의 유저까지만 배정 가능합니다"),
+    COMMENT_NOT_IN_SCHEDULE(400, "해당 스케줄에 속한 댓글이 아닙니다");
 
     private final int status;
     private final String msg;
