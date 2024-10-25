@@ -7,6 +7,7 @@ import com.my.memo.domain.schedule.ScheduleRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.ex.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,13 +26,13 @@ public class EntityValidator {
 
     public Schedule validateAndGetSchedule(Long scheduleId) {
         return scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
+                () -> new CustomApiException(ErrorCode.SCHEDULE_NOT_FOUND)
         );
     }
 
     public Comment validateAndGetComment(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 댓글은 존재하지 않습니다")
+                () -> new CustomApiException(ErrorCode.COMMENT_NOT_FOUND)
         );
     }
 
@@ -43,7 +44,7 @@ public class EntityValidator {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
-                    return new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다");
+                    return new CustomApiException(ErrorCode.USER_NOT_FOUND);
                 });
     }
 

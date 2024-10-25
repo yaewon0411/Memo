@@ -7,12 +7,11 @@ import com.my.memo.domain.scheduleUser.ScheduleUserRepository;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.ex.ErrorCode;
 import com.my.memo.util.CustomPasswordUtil;
-import com.my.memo.util.entity.EntityValidator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,14 +30,13 @@ public class UserService {
     private final ScheduleUserRepository scheduleUserRepository;
     private final ScheduleRepository scheduleRepository;
     private final JwtProvider jwtProvider;
-    private final EntityValidator entityValidator;
 
 
     @Transactional
     public UserDeleteRespDto deleteUser(Long userId) {
 
         User userPS = userRepository.findUserWithSchedulesById(userId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다")
+                () -> new CustomApiException(ErrorCode.USER_NOT_FOUND)
         );
 
         int deletedAssignedCnt = scheduleUserRepository.deleteByUserId(userId, userPS.getScheduleList());
@@ -58,59 +56,58 @@ public class UserService {
     }
 
     public UserRespDto getUserInfo(Long userId) {
-        User userPS = entityValidator.validateAndGetUser(userId);
+        User userPS = findByIdOrFail(userId);
         return new UserRespDto(userPS);
     }
 
 
     @Transactional
     public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, Long userId) {
-
-        User userPS = entityValidator.validateAndGetUser(userId);
-
+        User userPS = findByIdOrFail(userId);
         //수정 요청한 이메일이 사용중인 이메일인지 검사
         if (userModifyReqDto.getEmail() != null && !userPS.getEmail().equals(userModifyReqDto.getEmail())) {
             if (userRepository.existsUserByEmail(userModifyReqDto.getEmail()))
-                throw new CustomApiException(HttpStatus.CONFLICT.value(), "이미 사용 중인 이메일입니다");
+                throw new CustomApiException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
-
         userPS.modify(userModifyReqDto);
-
         return new UserModifyRespDto(userPS);
     }
 
 
     @Transactional
     public JoinRespDto join(JoinReqDto joinReqDto) {
-
         //이메일 중복 검사
         if (userRepository.existsUserByEmail(joinReqDto.getEmail())) {
-            log.warn("이메일 중복: {}", joinReqDto.getEmail());
-            throw new CustomApiException(HttpStatus.CONFLICT.value(), "이미 사용 중인 이메일입니다");
+            throw new CustomApiException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
-
         User userPS = userRepository.save(joinReqDto.toEntity());
         log.info("회원가입 완료: 유저 ID {}", userPS.getId());
-
         return new JoinRespDto(userPS);
     }
 
 
     public LoginRespDto login(LoginReqDto loginReqDto) {
-
         User userPS = userRepository.findUserByEmail(loginReqDto.getEmail()).orElseThrow(
-                () -> new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "이메일이 일치하지 않습니다")
+                () -> new CustomApiException(ErrorCode.INVALID_EMAIL)
         );
-
         // 비밀번호 검증
         if (!CustomPasswordUtil.matches(loginReqDto.getPassword(), userPS.getPassword())) {
-            log.warn("로그인 실패: 비밀번호 불일치");
-            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "비밀번호가 일치하지 않습니다");
+            throw new CustomApiException(ErrorCode.INVALID_PASSWORD);
         }
-
         String jwt = jwtProvider.create(userPS);
-
         return new LoginRespDto(userPS, jwt);
+    }
+
+    private User findByIdOrFail(Long userId) {
+
+//        if (userId == null) { //이거는 aop에 위임하는게 나을듯
+//            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
+//        }
+        return userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("존재하지 않는 유저 접근 시도: ID {}", userId);
+                    return new CustomApiException(ErrorCode.USER_NOT_FOUND);
+                });
     }
 
 

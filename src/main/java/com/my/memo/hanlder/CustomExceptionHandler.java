@@ -32,6 +32,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResult<ApiError>> handleGeneralException(Exception e) {
+        log.error("예기치 못한 오류 발생: {}", e.getMessage(), e);
         return new ResponseEntity<>(ApiResult.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 에러가 발생했습니다"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
