@@ -12,15 +12,14 @@ import com.my.memo.domain.user.Role;
 import com.my.memo.domain.user.User;
 import com.my.memo.domain.user.UserRepository;
 import com.my.memo.ex.CustomApiException;
+import com.my.memo.ex.ErrorCode;
 import com.my.memo.util.CustomUtil;
-import com.my.memo.util.entity.EntityValidator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,9 +41,9 @@ public class ScheduleService {
     private final CommentRepository commentRepository;
     private final ScheduleUserRepository scheduleUserRepository;
     private final UserRepository userRepository;
-    private final EntityValidator entityValidator;
     private final WeatherClient weatherClient;
     private final Clock clock;
+    private final UserService userService;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 
@@ -71,17 +70,16 @@ public class ScheduleService {
     public ScheduleDeleteRespDto deleteSchedule(Long scheduleId, Long userId) {
 
         //관리자 검증
-        User adminPS = entityValidator.validateAndGetUser(userId);
-        log.info("일정 삭제 시도: 관리자 ID {}", adminPS.getId());
+        userService.findByIdOrFail(userId);
+        log.info("일정 삭제 시도: 관리자 ID {}", userId);
 
         //해당 일정 조회
         Schedule schedulePS = scheduleRepository.findScheduleWithCommentsById(scheduleId).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "해당 일정은 존재하지 않습니다")
+                () -> new CustomApiException(ErrorCode.SCHEDULE_NOT_FOUND)
         );
-
         //작성자 조회
         User userPS = userRepository.findUserWithSchedulesById(schedulePS.getUser().getId()).orElseThrow(
-                () -> new CustomApiException(HttpStatus.NOT_FOUND.value(), "작성자 정보를 찾을 수 없습니다")
+                () -> new CustomApiException(ErrorCode.AUTHOR_NOT_FOUND)
         );
 
         //스케줄에 배정된 유저 리스트 삭제
@@ -100,13 +98,10 @@ public class ScheduleService {
     @Transactional
     public ScheduleModifyRespDto updateSchedule(ScheduleModifyReqDto scheduleModifyReqDto, Long scheduleId, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(userId);
-
+        User userPS = userService.findByIdOrFail(userId);
         log.info("일정 수정 시도: 관리자 ID {}", userPS.getId());
-
         //해당 일정 조회
-        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
-
+        Schedule schedulePS = findByIdOrFail(scheduleId);
         // 요청한 필드에 대해 수정
         schedulePS.modify(scheduleModifyReqDto);
 
@@ -115,7 +110,7 @@ public class ScheduleService {
 
     public UserScheduleListRespDto findUserSchedules(UserScheduleFilter userScheduleFilter, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(userId);
+        User userPS = userService.findByIdOrFail(userId);
 
         List<ScheduleWithCommentAndUserCountsDto> scheduleList = scheduleRepository.findUserSchedulesWithFilters(userPS, userScheduleFilter);
 
@@ -137,15 +132,13 @@ public class ScheduleService {
 
     public ScheduleRespDto findScheduleById(Long scheduleId, int page, int limit, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(userId);
-        Schedule schedulePS = entityValidator.validateAndGetSchedule(scheduleId);
+        User userPS = userService.findByIdOrFail(userId);
+        Schedule schedulePS = findByIdOrFail(scheduleId);
 
         validateScheduleAccess(schedulePS, userPS);
 
         PageRequest pageRequest = PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "createdAt"));
-
         Page<Comment> commentPage = commentRepository.findCommentsWithUserBySchedule(schedulePS, pageRequest);
-
         List<ScheduleUser> assignedUserList = scheduleUserRepository.findScheduleUserBySchedule(schedulePS);
 
         return new ScheduleRespDto(schedulePS, commentPage, assignedUserList);
@@ -153,23 +146,25 @@ public class ScheduleService {
 
     private void validateScheduleAccess(Schedule schedule, User user) {
         if (!schedule.isPublic() && !user.getRole().equals(Role.ADMIN) && !schedule.getUser().equals(user)) {
-            throw new CustomApiException(HttpStatus.FORBIDDEN.value(), "해당 일정에 접근할 권한이 없습니다");
+            throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
     }
-
 
     @Transactional
     public ScheduleCreateRespDto createSchedule(ScheduleCreateReqDto scheduleCreateReqDto, Long userId) {
 
-        User userPS = entityValidator.validateAndGetUser(userId);
-
+        User userPS = userService.findByIdOrFail(userId);
         String todayWeather = weatherClient.getTodayWeather(CustomUtil.localDateTimeToFormattedString(LocalDateTime.now(clock)));
-
         Schedule schedulePS = scheduleRepository.save(scheduleCreateReqDto.toEntity(userPS, todayWeather));
 
         log.info("일정 저장 완료 : 일정 ID {}, 유저 ID {}", schedulePS.getId(), userPS.getId());
         return new ScheduleCreateRespDto(schedulePS);
     }
 
+    public Schedule findByIdOrFail(Long scheduleId) {
+        return scheduleRepository.findById(scheduleId).orElseThrow(
+                () -> new CustomApiException(ErrorCode.SCHEDULE_NOT_FOUND)
+        );
+    }
 
 }

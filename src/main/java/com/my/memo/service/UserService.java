@@ -98,7 +98,7 @@ public class UserService {
         return new LoginRespDto(userPS, jwt);
     }
 
-    private User findByIdOrFail(Long userId) {
+    public User findByIdOrFail(Long userId) {
 
 //        if (userId == null) { //이거는 aop에 위임하는게 나을듯
 //            throw new CustomApiException(HttpStatus.UNAUTHORIZED.value(), "재로그인이 필요합니다");
