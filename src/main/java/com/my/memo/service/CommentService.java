@@ -56,7 +56,7 @@ public class CommentService {
         Comment commentPS = findByIdOrFail(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
-        if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().getId().equals(userId)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && commentPS.isAuthor(userPS)) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
         }
         commentPS.modify(commentModifyReqDto);
@@ -77,7 +77,7 @@ public class CommentService {
         Comment commentPS = findByIdOrFail(commentId);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
-        if (!userPS.getRole().equals(Role.ADMIN) && !commentPS.getUser().getId().equals(userId)) {
+        if (!userPS.getRole().equals(Role.ADMIN) && commentPS.isAuthor(userPS)) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
         }
         schedulePS.getCommentList().remove(commentPS);

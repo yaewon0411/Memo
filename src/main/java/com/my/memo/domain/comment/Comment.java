@@ -41,6 +41,10 @@ public class Comment extends BaseEntity {
         schedule.getCommentList().add(this);
     }
 
+    public boolean isAuthor(User user) {
+        return !this.user.getId().equals(user.getId());
+    }
+
     public void modify(CommentModifyReqDto commentModifyReqDto) {
         this.content = commentModifyReqDto.getContent();
     }
