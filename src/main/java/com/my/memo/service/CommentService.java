@@ -39,13 +39,17 @@ public class CommentService {
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
 
-        //공개 일정이 아닌데 & 관리자도 아니면 -> 댓글 작성 불가
-        if (!schedulePS.isOwner(userPS) & !schedulePS.isPublic() && !userPS.isAdmin()) {
-            throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
-        }
+        //공개 일정이 아닌데 & 관리자도 아니고 일정 작성자도 아니면-> 댓글 작성 불가
+        validateCommentCreate(schedulePS, userPS);
         //코멘트 저장
         Comment commentPS = commentRepository.save(commentReqDto.toEntity(userPS, schedulePS));
         return new CommentCreateRespDto(commentPS);
+    }
+
+    private void validateCommentCreate(Schedule schedule, User user) {
+        if (!schedule.isPublic()) {
+            schedule.validateScheduleAccess(user);
+        }
     }
 
     // 댓글 수정
@@ -98,5 +102,5 @@ public class CommentService {
                 () -> new CustomApiException(ErrorCode.COMMENT_NOT_FOUND)
         );
     }
-    
+
 }

@@ -24,10 +24,10 @@ public class ScheduleModifyReqDto {
     private Boolean isPublic;
 
     public LocalDateTime getStartAt() {
-        return CustomUtil.stringToLocalDateTime(this.startAt);
+        return this.startAt != null ? CustomUtil.stringToLocalDateTime(this.startAt) : null;
     }
 
     public LocalDateTime getEndAt() {
-        return CustomUtil.stringToLocalDateTime(this.endAt);
+        return this.endAt != null ? CustomUtil.stringToLocalDateTime(this.endAt) : null;
     }
 }
