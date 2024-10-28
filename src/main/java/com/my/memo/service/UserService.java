@@ -69,11 +69,7 @@ public class UserService {
     @RequireAuthenticatedUser
     public UserModifyRespDto updateUser(UserModifyReqDto userModifyReqDto, Long userId) {
         User userPS = findByIdOrFail(userId);
-        //수정 요청한 이메일이 사용중인 이메일인지 검사
-        if (userModifyReqDto.getEmail() != null && !userPS.getEmail().equals(userModifyReqDto.getEmail())) {
-            if (userRepository.existsUserByEmail(userModifyReqDto.getEmail()))
-                throw new CustomApiException(ErrorCode.EMAIL_ALREADY_EXISTS);
-        }
+        userPS.validateEmailIfChanged(userModifyReqDto.getEmail(), userRepository);
         userPS.modify(userModifyReqDto);
         return new UserModifyRespDto(userPS);
     }

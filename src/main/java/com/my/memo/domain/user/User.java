@@ -3,6 +3,8 @@ package com.my.memo.domain.user;
 import com.my.memo.domain.base.BaseEntity;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.dto.user.req.UserModifyReqDto;
+import com.my.memo.ex.CustomApiException;
+import com.my.memo.ex.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -68,5 +70,14 @@ public class User extends BaseEntity {
     public boolean isAdmin() {
         return this.role.equals(Role.ADMIN);
     }
+
+    public void validateEmailIfChanged(String newEmail, UserRepository userRepository) {
+        if (newEmail != null && !this.email.equals(newEmail)) {
+            if (userRepository.existsUserByEmail(newEmail)) {
+                throw new CustomApiException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            }
+        }
+    }
+
 
 }
