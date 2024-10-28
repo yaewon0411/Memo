@@ -4,6 +4,8 @@ import com.my.memo.domain.base.BaseEntity;
 import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.domain.user.User;
 import com.my.memo.dto.comment.req.CommentModifyReqDto;
+import com.my.memo.ex.CustomApiException;
+import com.my.memo.ex.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,6 +45,18 @@ public class Comment extends BaseEntity {
 
     public boolean isAuthor(User user) {
         return this.user.getId().equals(user.getId());
+    }
+
+    public void validateCommentAccess(User user) {
+        if (!user.isAdmin() && !this.isAuthor(user)) {
+            throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
+        }
+    }
+
+    public void validateBelongsTo(Schedule schedule) {
+        if (!this.schedule.getId().equals(schedule.getId())) {
+            throw new CustomApiException(ErrorCode.COMMENT_NOT_IN_SCHEDULE);
+        }
     }
 
     public void modify(CommentModifyReqDto commentModifyReqDto) {

@@ -58,10 +58,10 @@ public class CommentService {
         Comment commentPS = findByIdOrFail(commentId);
 
         //해당 스케줄에 달린 댓글이 맞는지 확인
-        isCommentInSchedule(schedulePS, commentPS);
+        commentPS.validateBelongsTo(schedulePS);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
-        validateCommentAccess(userPS, commentPS);
+        commentPS.validateCommentAccess(userPS);
 
         commentPS.modify(commentModifyReqDto);
         commentRepository.save(commentPS);
@@ -81,10 +81,10 @@ public class CommentService {
         Comment commentPS = findByIdOrFail(commentId);
 
         //해당 스케줄에 달린 댓글이 맞는지 확인
-        isCommentInSchedule(schedulePS, commentPS);
+        commentPS.validateBelongsTo(schedulePS);
 
         //관리자가 아니라면 댓글 작성자 본인이여야 함
-        validateCommentAccess(userPS, commentPS);
+        commentPS.validateCommentAccess(userPS);
 
         schedulePS.getCommentList().remove(commentPS);
         commentRepository.deleteById(commentId);
@@ -98,18 +98,5 @@ public class CommentService {
                 () -> new CustomApiException(ErrorCode.COMMENT_NOT_FOUND)
         );
     }
-
-    private void isCommentInSchedule(Schedule schedule, Comment comment) {
-        if (!schedule.getCommentList().contains(comment)) {
-            throw new CustomApiException(ErrorCode.COMMENT_NOT_IN_SCHEDULE);
-        }
-    }
-
-    private void validateCommentAccess(User user, Comment comment) {
-        if (!user.isAdmin() && !comment.isAuthor(user)) {
-            throw new CustomApiException(ErrorCode.FORBIDDEN_COMMENT_ACCESS);
-        }
-    }
-
-
+    
 }
