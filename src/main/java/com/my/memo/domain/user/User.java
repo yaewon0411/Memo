@@ -5,6 +5,7 @@ import com.my.memo.domain.schedule.Schedule;
 import com.my.memo.dto.user.req.UserModifyReqDto;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.ErrorCode;
+import com.my.memo.util.CustomPasswordUtil;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -79,5 +80,10 @@ public class User extends BaseEntity {
         }
     }
 
+    public void validatePassword(String encodedPassword) {
+        if (!CustomPasswordUtil.matches(encodedPassword, this.password)) {
+            throw new CustomApiException(ErrorCode.INVALID_PASSWORD);
+        }
+    }
 
 }

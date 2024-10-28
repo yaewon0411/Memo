@@ -4,6 +4,8 @@ import com.my.memo.domain.base.BaseEntity;
 import com.my.memo.domain.comment.Comment;
 import com.my.memo.domain.user.User;
 import com.my.memo.dto.schedule.req.ScheduleModifyReqDto;
+import com.my.memo.ex.CustomApiException;
+import com.my.memo.ex.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -57,6 +59,11 @@ public class Schedule extends BaseEntity {
         return this.user.getId().equals(user.getId());
     }
 
+    public void validateScheduleAccess(User user) {
+        if (!user.isAdmin() && !this.isOwner(user)) {
+            throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
+        }
+    }
 
     public void modify(ScheduleModifyReqDto scheduleModifyReqDto) {
         if (scheduleModifyReqDto.getContent() != null)

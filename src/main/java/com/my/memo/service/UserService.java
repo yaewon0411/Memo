@@ -13,7 +13,6 @@ import com.my.memo.dto.user.req.UserModifyReqDto;
 import com.my.memo.dto.user.resp.*;
 import com.my.memo.ex.CustomApiException;
 import com.my.memo.ex.ErrorCode;
-import com.my.memo.util.CustomPasswordUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,9 +91,7 @@ public class UserService {
                 () -> new CustomApiException(ErrorCode.INVALID_EMAIL)
         );
         // 비밀번호 검증
-        if (!CustomPasswordUtil.matches(loginReqDto.getPassword(), userPS.getPassword())) {
-            throw new CustomApiException(ErrorCode.INVALID_PASSWORD);
-        }
+        userPS.validatePassword(loginReqDto.getPassword());
         String jwt = jwtProvider.create(userPS);
         return new LoginRespDto(userPS, jwt);
     }

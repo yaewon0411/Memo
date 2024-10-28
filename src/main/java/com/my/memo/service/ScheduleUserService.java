@@ -40,7 +40,7 @@ public class ScheduleUserService {
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
         //일정 접근 권한 검사
-        validateScheduleAccess(userPS, schedulePS);
+        schedulePS.validateScheduleAccess(userPS);
 
         //일정에서 삭제할 유저 아이디 리스트
         List<Long> userIdListToDelete = assignedUserDeleteReqDto.getUserIdList().stream().map(AssignedUserDeleteReqDto.UserDto::getUserId).toList();
@@ -62,7 +62,7 @@ public class ScheduleUserService {
         User userPS = userService.findByIdOrFail(userId);
         Schedule schedulePS = scheduleService.findByIdOrFail(scheduleId);
         //일정 접근 권한 검사
-        validateScheduleAccess(userPS, schedulePS);
+        schedulePS.validateScheduleAccess(userPS);
         //최대 인원 검사
         validateScheduleUserLimit(schedulePS, userAssignReqDto);
 
@@ -93,12 +93,6 @@ public class ScheduleUserService {
 
         if (currentAssignUserCnt + newAssignUserCnt > 5)
             throw new CustomApiException(ErrorCode.SCHEDULE_USER_LIMIT_EXCEEDED);
-    }
-
-    private void validateScheduleAccess(User user, Schedule schedule) {
-        if (!user.isAdmin() && !schedule.isOwner(user)) {
-            throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
-        }
     }
 
     private void validateUsersNotAlreadyAssigned(Set<Long> assignedUserIdSet, List<Long> userIdListToAssign) {
