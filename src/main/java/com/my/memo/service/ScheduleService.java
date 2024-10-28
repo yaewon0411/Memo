@@ -148,9 +148,10 @@ public class ScheduleService {
     }
 
     private void validateScheduleAccess(Schedule schedule, User user) {
-        if (!schedule.isPublic() && !user.isAdmin() && !schedule.isOwner(user)) {
+        if (!schedule.isPublic()) {
             throw new CustomApiException(ErrorCode.FORBIDDEN_SCHEDULE_ACCESS);
         }
+        schedule.validateScheduleAccess(user);
     }
 
     @Transactional
