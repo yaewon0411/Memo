@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
     INTERNAL_SERVER_ERROR(500, "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요"),
-    INVALID_AUTH_INFO(401, "인증 정보가 유효하지 않습니다"),
+    INVALID_AUTH_INFO(500, "인증 정보가 유실되었습니다"),
     CONTEXT_NOT_EXIST(403, "요청 컨텍스트를 찾을 수 없습니다"),
     USER_NOT_EXIST(404, "존재하지 않는 유저가 포함되어 있습니다"),
     USER_ALREADY_ASSIGNED_TO_SCHEDULE(400, "이미 해당 일정에 배정된 유저가 포함되어 있습니다"),

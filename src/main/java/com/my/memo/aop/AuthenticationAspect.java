@@ -19,7 +19,7 @@ public class AuthenticationAspect {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Around(value = "@annotaion(requireAuthenticatedUser)", argNames = "proceedingJoinPoint,requireAuthenticatedUser")
+    @Around("@annotaion(requireAuthenticatedUser)")
     public Object authenticatedUser(ProceedingJoinPoint proceedingJoinPoint, RequireAuthenticatedUser requireAuthenticatedUser) throws Throwable {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (requestAttributes == null) {
